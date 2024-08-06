@@ -34,3 +34,7 @@ Tecnologias Emergentes
 - Instalar em uma página HTML
 
     [Instalar Assistente](https://developer.ibm.com/tutorials/embed-watson-assistant-in-website/)
+
+- Tutorial de integração com serviços de voz
+
+    [Serviços Voz](https://developer.ibm.com/tutorials/integrate-voice-services-to-your-watson-assistant/)
