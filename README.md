@@ -29,3 +29,8 @@ Tecnologias Emergentes
     npm init -y
     npm i --save ibm-watson
     ```
+### Watson Assistant
+
+- Instalar em uma página HTML
+
+    [Instalar Assistente](https://developer.ibm.com/tutorials/embed-watson-assistant-in-website/)
