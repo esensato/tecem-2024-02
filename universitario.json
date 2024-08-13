@@ -1,0 +1,78 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Sistema Universitário",
+        "version": "1.0.0",
+        "description": "API para acessar a grade de disciplinas de alunos."
+    },
+    "servers": [
+        {
+            "url": "https://sistema-universitario.glitch.me"
+        }
+    ],
+    "paths": {
+        "/grade/{matricula}": {
+            "get": {
+                "summary": "Obter grade de disciplinas do aluno",
+                "description": "Este endpoint retorna as disciplinas que o aluno está matriculado no semestre.",
+                "parameters": [
+                    {
+                        "name": "matricula",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "20234567"
+                        },
+                        "description": "Número de matrícula do aluno"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Grade de disciplinas obtida com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "nome": {
+                                            "type": "string",
+                                            "example": "João Silva"
+                                        },
+                                        "disciplinas": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "example": [
+                                                "Matemática",
+                                                "Física",
+                                                "Química"
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Aluno não encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Aluno não encontrado"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

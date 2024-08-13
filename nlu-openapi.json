@@ -1,0 +1,102 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "IBM Watson Natural Language Understanding API",
+        "version": "1.0.0",
+        "description": "API para analisar o conteúdo da web usando o IBM Watson Natural Language Understanding."
+    },
+    "servers": [
+        {
+            "url": "https://api.us-south.natural-language-understanding.watson.cloud.ibm.com/instances/016df240-c6dc-4d79-ac54-1eefa2cc9d51",
+            "description": "Servidor principal para o IBM Watson NLU"
+        }
+    ],
+    "paths": {
+        "/v1/analyze?version=2019-07-12": {
+            "post": {
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "Basic <base64-encoded-credentials>"
+                        }
+                    }
+                ],
+                "summary": "Analisa o conteúdo da web usando o IBM Watson NLU.",
+                "operationId": "analyzeContent",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "text": {
+                                        "type": "string",
+                                        "description": "Texto do conteúdo a ser analisado."
+                                    },
+                                    "features": {
+                                        "type": "object",
+                                        "properties": {
+                                            "categories": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "limit": {
+                                                        "type": "integer",
+                                                        "description": "Número máximo de categorias para retornar."
+                                                    }
+                                                },
+                                                "required": [
+                                                    "limit"
+                                                ]
+                                            }
+                                        },
+                                        "required": [
+                                            "categories"
+                                        ]
+                                    }
+                                },
+                                "required": [
+                                    "text",
+                                    "features"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Análise concluída com sucesso.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Requisição malformada.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "description": "Descrição do erro."
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

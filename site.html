@@ -1,0 +1,26 @@
+<html>
+
+<head>
+    <title>Universidade Universal</title>
+
+    <script>
+        window.watsonAssistantChatOptions = {
+            integrationID: "e4d1ae23-bd28-486e-969e-ce6a898219da", // The ID of this integration.
+            region: "us-south", // The region your integration is hosted in.
+            serviceInstanceID: "14aa13f6-bc25-4f3f-9aba-ae551a9f7f37", // The ID of your service instance.
+            onLoad: async (instance) => { await instance.render(); }
+        };
+        setTimeout(function () {
+            const t = document.createElement('script');
+            t.src = "https://web-chat.global.assistant.watson.appdomain.cloud/versions/" + (window.watsonAssistantChatOptions.clientVersion || 'latest') + "/WatsonAssistantChatEntry.js";
+            document.head.appendChild(t);
+        });
+    </script>
+
+</head>
+
+<body>
+    <h1>Universidade Universal</h1>
+</body>
+
+</html>
