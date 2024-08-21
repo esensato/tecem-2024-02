@@ -79,3 +79,9 @@
         "pontos": 1100
     }
     ```
+- Para a entrega, enviar o link para o **chatbot**
+- Clicar no botão **Copy LInk to Share** na parte superior
+
+<div style="width:300px; height:100px">
+<img src="img/img5.png">
+</div>
