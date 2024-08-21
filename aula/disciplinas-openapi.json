@@ -1,0 +1,78 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Sistema Universitário",
+        "description": "API para obter a grade de um aluno.",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "https://sistema-universitario.glitch.me",
+            "description": "Servidor principal da API"
+        }
+    ],
+    "paths": {
+        "/grade/{matricula}": {
+            "get": {
+                "summary": "Obtém a grade de um aluno",
+                "description": "Retorna o nome do aluno e suas disciplinas com base na matrícula fornecida.",
+                "parameters": [
+                    {
+                        "name": "matricula",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "A matrícula do aluno."
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Resposta bem-sucedida com os dados do aluno e suas disciplinas.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "nome": {
+                                            "type": "string",
+                                            "example": "João da Silva"
+                                        },
+                                        "disciplinas": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "example": "Matemática"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "nome",
+                                        "disciplinas"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Aluno não encontrado.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Aluno não encontrado"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
