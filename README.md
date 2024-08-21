@@ -146,11 +146,11 @@ Gere um json no formato OpenAPI para o endpoint https://sistema-universitario.gl
 
     `https://sistema-universitario.glitch.me/sala/Estrutura de Dados`
 
+### Personalizando o chatbot
 - Instalar em uma página HTML
 
     [Instalar Assistente](https://developer.ibm.com/tutorials/embed-watson-assistant-in-website/)
 
-### Personalizando o chatbot
 - Código inicial para exibir o chatbot em um site
     ```javascript
     <script>
