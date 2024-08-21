@@ -131,7 +131,7 @@ Tecnologias Emergentes
 
 - Formato `OpenAPI`
 ```
-Gere um json no formato OpenAPI para o endpoint https://sistema-universitario.glitch.me/grade/:matricula onde :matricula corresponde à matrícula do aluno. O endpoint retorna um JSON no formato {nome: "nome do aulo", disciplinas: ["disciplina1", "disciplina2"]}
+Gere um json no formato OpenAPI para o endpoint https://sistema-universitario.glitch.me/grade/:matricula onde :matricula corresponde à matrícula do aluno. O endpoint retorna um JSON no formato {aluno: "nome do aulo", disciplinas: ["disciplina1", "disciplina2"]}
 ```
 
 <div style="width:100px; height:100px">
