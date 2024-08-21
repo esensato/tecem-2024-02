@@ -133,6 +133,11 @@ Tecnologias Emergentes
 ```
 Gere um json no formato OpenAPI para o endpoint https://sistema-universitario.glitch.me/grade/:matricula onde :matricula corresponde à matrícula do aluno. O endpoint retorna um JSON no formato {nome: "nome do aulo", disciplinas: ["disciplina1", "disciplina2"]}
 ```
+
+<div style="width:100px; height:100px">
+<img src="img/img4.png">
+</div>
+
 - Desenvolver um diálogo para que o aluno possa solicitar a nota de uma disciplina informando o número de matrícula e a descrição da disciplina
 
     `https://sistema-universitario.glitch.me/nota/1000/Estrutura de Dados`
