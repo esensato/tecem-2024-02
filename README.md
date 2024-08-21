@@ -120,6 +120,11 @@ Tecnologias Emergentes
     </div>
 
 #### Integração com o sistema da universidade
+
+<div style="width:100px; height:100px">
+<img src="img/img3.png">
+</div>
+
 - Acessar o `endpoint` para obter a lista de disciplinas
 
     `https://sistema-universitario.glitch.me/grade/1000`
