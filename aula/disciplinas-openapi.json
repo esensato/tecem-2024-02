@@ -35,7 +35,7 @@
                                 "schema": {
                                     "type": "object",
                                     "properties": {
-                                        "nome": {
+                                        "aluno": {
                                             "type": "string",
                                             "example": "João da Silva"
                                         },
@@ -48,7 +48,7 @@
                                         }
                                     },
                                     "required": [
-                                        "nome",
+                                        "aluno",
                                         "disciplinas"
                                     ]
                                 }
