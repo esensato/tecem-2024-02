@@ -250,3 +250,153 @@ Gere um json no formato OpenAPI para o endpoint https://sistema-universitario.gl
 
         }
     ```
+
+## IoT
+
+- Acessar o emulador [Arduino Uno](https://wokwi.com/projects/new/arduino-uno)
+- Pinos digitais (0-13): entrada ou saída (HIGH ou LOW)
+- GND: terra
+#### Linguagem Arduino
+- É uma linguagem para progeramação do **Arduino** [Linguagem Arduino](https://www.arduino.cc/reference/pt/)
+- Código básico
+    ```javascript
+    void setup() {
+      // Configurações iniciais
+    }
+    
+    void loop() {
+      // Loop principal
+    }
+    ```
+- Principais funções:
+    - `pinMode(pino, modo)`: configura um pino como entrada (`INPUT`) ou saída (`OUTPUT`)
+    - `digitalWrite(pino, valor)`: envia um sinal (`HIGH` / `LOW`) a um determinado pino
+    - `delay(ms)`: aguarda o período especificado (em milisegundos)
+- Exemplo *led* piscando no pino 13:
+    ```javascript
+    // Defina o pino do LED
+    const int ledPin = 13;
+    
+    void setup() {
+      // Configure o pino do LED como saída
+      pinMode(ledPin, OUTPUT);
+    }
+    
+    void loop() {
+      // Acenda o LED
+      digitalWrite(ledPin, HIGH);
+      // Espere 1 segundo (1000 milissegundos)
+      delay(1000);
+      // Apague o LED
+      digitalWrite(ledPin, LOW);
+      // Espere 1 segundo (1000 milissegundos)
+      delay(1000);
+    }
+    ```
+- Exemplo 3 leds piscando de forma aleatória
+    ```javascript
+    // Defina os pinos dos LEDs
+    const int ledPins[] = {8, 9, 10}; // Pinos aos quais os LEDs estão conectados
+    const int numLeds = 3; // Número de LEDs
+    
+    void setup() {
+      // Configure todos os pinos dos LEDs como saída
+      for (int i = 0; i < numLeds; i++) {
+        pinMode(ledPins[i], OUTPUT);
+      }
+      
+      // Inicialize os LEDs apagados
+      for (int i = 0; i < numLeds; i++) {
+        digitalWrite(ledPins[i], LOW);
+      }
+    }
+    
+    void loop() {
+      // Escolha um LED aleatório para piscar
+      int ledIndex = random(numLeds);
+      
+      // Acenda o LED escolhido
+      digitalWrite(ledPins[ledIndex], HIGH);
+      
+      // Espere um intervalo aleatório entre 500 e 1500 milissegundos
+      delay(random(500, 1501));
+      
+      // Apague o LED escolhido
+      digitalWrite(ledPins[ledIndex], LOW);
+      
+      // Espere um intervalo aleatório entre 500 e 1500 milissegundos antes de piscar o próximo LED
+      delay(random(500, 1501));
+    }
+    ```
+- Exemplo [push button](https://docs.wokwi.com/pt-BR/parts/wokwi-pushbutton) para ligar e desligar um led (obs: no push button a entrada e saída são invertidas)
+    ```javascript
+    // Defina o pino do LED e do botão
+    const int ledPin = 13;
+    const int buttonPin = 2;
+    
+    // Variáveis para armazenar o estado do botão e do LED
+    int buttonState = 0;
+    int lastButtonState = 0;
+    bool ledState = false;
+    
+    void setup() {
+    
+      Serial.begin(9600);
+      // Configure o pino do LED como saída
+      pinMode(ledPin, OUTPUT);
+      
+      // Configure o pino do botão como entrada com pull-up interno
+      pinMode(buttonPin, INPUT_PULLUP);
+      
+      // Inicialize o LED apagado
+      digitalWrite(ledPin, LOW);
+    }
+    
+    void loop() {
+    
+      // Leia o estado atual do botão
+      buttonState = digitalRead(buttonPin);
+          Serial.print(buttonState);
+      // Verifique se o botão foi pressionado (transição de HIGH para LOW)
+      if (buttonState == LOW && lastButtonState == HIGH) {
+        // Troque o estado do LED
+        ledState = !ledState;
+        // Atualize o estado do LED
+        digitalWrite(ledPin, ledState ? HIGH : LOW);
+        // Espere um tempo para debouncing
+        delay(50);
+      }
+      
+      // Armazene o estado atual do botão para a próxima iteração
+      lastButtonState = buttonState;
+    }
+    ```
+    - Exemplo sensor de temperatura (DS 18B20 - pinos: alimentação, leitura e terra)
+    - Uso de bibliotecas Arduino [Referência](https://www.arduino.cc/reference/en/libraries/)
+    ```javascript
+    // After running the simulator, click on the DS18B20 chip to change the temperature
+    // Chip by bonnyr, source code: https://github.com/bonnyr/wokwi-ds1820-custom-chip/
+    
+    #include <OneWire.h>
+    #include <DallasTemperature.h>
+    
+    OneWire oneWire(10);
+    DallasTemperature sensor(&oneWire);
+    
+    void setup(void) {
+      Serial.begin(115200);
+      delay(2);
+      sensor.begin();
+      delay(20);
+    }
+    
+    void loop(void) {
+      sensor.requestTemperatures();
+      Serial.print("Temperature is: ");
+      delay(10);
+      Serial.println(sensor.getTempCByIndex(0));
+      delay(1000);
+    }
+    ```
+    
+    
