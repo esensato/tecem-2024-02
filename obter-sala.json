@@ -1,0 +1,56 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Sistema Universitário API",
+        "description": "API para consulta de salas de aulas para disciplinas.",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "https://sistema-universitario.glitch.me"
+        }
+    ],
+    "paths": {
+        "/sala/{disciplina}": {
+            "get": {
+                "summary": "Obter sala de aula para uma disciplina",
+                "description": "Retorna a sala de aula onde a disciplina é ministrada.",
+                "parameters": [
+                    {
+                        "name": "disciplina",
+                        "in": "path",
+                        "required": true,
+                        "description": "Nome da disciplina.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Sala de aula retornada com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "sala": {
+                                            "type": "string",
+                                            "description": "Sala de aula onde a disciplina é ministrada"
+                                        }
+                                    }
+                                },
+                                "example": {
+                                    "sala": "B203"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Disciplina não encontrada"
+                    }
+                }
+            }
+        }
+    }
+}

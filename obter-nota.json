@@ -1,0 +1,65 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Sistema Universitário API",
+        "description": "API para consulta de notas de alunos em disciplinas.",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "https://sistema-universitario.glitch.me"
+        }
+    ],
+    "paths": {
+        "/nota/{matricula}/{disciplina}": {
+            "get": {
+                "summary": "Obter nota do aluno em uma disciplina",
+                "description": "Retorna a nota do aluno para uma disciplina específica.",
+                "parameters": [
+                    {
+                        "name": "matricula",
+                        "in": "path",
+                        "required": true,
+                        "description": "Matrícula do aluno.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "disciplina",
+                        "in": "path",
+                        "required": true,
+                        "description": "Nome da disciplina.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Nota do aluno retornada com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "nota": {
+                                            "type": "string",
+                                            "description": "Nota do aluno na disciplina"
+                                        }
+                                    }
+                                },
+                                "example": {
+                                    "nota": "8.5"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Aluno ou disciplina não encontrados"
+                    }
+                }
+            }
+        }
+    }
+}
