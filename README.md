@@ -253,7 +253,7 @@ Gere um json no formato OpenAPI para o endpoint https://sistema-universitario.gl
 
 ## IoT
 
-- Acessar o emulador [Arduino Uno](https://wokwi.com/projects/new/arduino-uno)
+- Acessar o emulador [Arduino Uno](https://wokwi.com/projects/new/arduino-uno) ou [instalar no VSCode](https://docs.wokwi.com/pt-BR/vscode/getting-started)
 - Pinos digitais (0-13): entrada ou saída (HIGH ou LOW)
 - GND: terra
 #### Linguagem Arduino
@@ -393,6 +393,30 @@ Gere um json no formato OpenAPI para o endpoint https://sistema-universitario.gl
       lastButtonState = buttonState;
     }
     ```
+- Exemplo [joystick](https://docs.wokwi.com/pt-BR/parts/wokwi-analog-joystick)
+    - Utilizar portas seriais
+
+    ```javascript
+    #define VERT_PIN A0
+    #define HORZ_PIN A1
+    #define SEL_PIN  2
+    
+    void setup() {
+      pinMode(VERT_PIN, INPUT);
+      pinMode(HORZ_PIN, INPUT);
+      pinMode(SEL_PIN, INPUT_PULLUP);
+    }
+    
+    void loop() {
+      int vert = analogRead(VERT_PIN);
+      int horz = analogRead(HORZ_PIN);
+      bool selPressed = digitalRead(SEL_PIN) == LOW;
+      // horz vai de 0 (direita) a 1023 (esquerda)
+      // vert vai de 0 (parte inferior) a 1023 (parte superior)
+      // selPressed é true se o joystick estiver pressionado
+    }
+    ```
+- Exercício: Acender 4 leds conforme o movimento realizado pelo *joysctick*
 - Exemplo [display de 7 segmentos](https://docs.wokwi.com/pt-BR/parts/wokwi-7segment)
     - P(2) - S(A), P(3) - S(B), P(4) - S(C), P(5) - S(D), P(6) - S(E), P(7) - S(F), P(8) - S(G)
     - COM2 - GND
@@ -526,11 +550,39 @@ Gere um json no formato OpenAPI para o endpoint https://sistema-universitario.gl
     
     }
     ```
+- Incluir ium [potenciômetro](https://docs.wokwi.com/pt-BR/parts/wokwi-potentiometer) para aumentar ou diminuir o passo do `servo`
+    - Conectado à porta analógica (A0)
+    ```javascript
+    #include <Servo.h>
+    
+    Servo arm; // Create a "Servo" object called "arm"
+    float pos = 0.0; // Variable where the arm's position will be stored (in degrees)
+    float step = 1.0; // Variable used for the arm's position step
+    
+    void setup() {
+    
+      arm.attach(2); // Attache the arm to the pin 2
+      arm.write(pos); // Initialize the arm's position to 0 (leftmost)
+    
+      Serial.begin(115200);
+      pinMode(A0, INPUT);
+    
+    }
+    
+    void loop() {
+    
+      arm.write(pos);
+      delay(100);
+      pos = pos + step;
+    
+      step = analogRead(A0);
+      Serial.println(step);
+    
+    }
+    ```
+
 - Exemplo sensor de temperatura (DS 18B20 - pinos: alimentação, leitura e terra)
     ```javascript
-    // After running the simulator, click on the DS18B20 chip to change the temperature
-    // Chip by bonnyr, source code: https://github.com/bonnyr/wokwi-ds1820-custom-chip/
-    
     #include <OneWire.h>
     #include <DallasTemperature.h>
     
@@ -552,4 +604,57 @@ Gere um json no formato OpenAPI para o endpoint https://sistema-universitario.gl
         delay(1000);
     }
     ```
+#### Acesso Internet
+- Arduino Uno não possui interface com a internet
+- Utilizar o [ESP32](https://wokwi.com/projects/new/esp32) que possui uma placa de rede integrada
+- Exemplo de requisição *POST*
+    ```javascript
+    #include <WiFi.h>
+    #include <HTTPClient.h>
+    
+    void setup() {
+      Serial.begin(9600);
+      Serial.print("Conectando-se ao Wi-Fi");
+      WiFi.begin("Wokwi-GUEST", "", 6);
+      while (WiFi.status() != WL_CONNECTED) {
+        delay(100);
+        Serial.print(".");
+      }
+      Serial.println(" Conectado!");
+    
+      // Realizar a requisição POST
+      if (WiFi.status() == WL_CONNECTED) {
+        HTTPClient http;
+    
+        // Defina o URL do servidor que receberá a requisição POST
+        http.begin("https://teste-iot-server.glitch.me/temperatura"); // Substitua pela URL do servidor
+    
+        // Defina o tipo de conteúdo (JSON, neste caso)
+        http.addHeader("Content-Type", "application/json");
+    
+        // Dados JSON que serão enviados
+        String postData = "{\"sensor\":\"ESP32\",\"temperatura\":\"30\"}";
+    
+        // Realiza a requisição POST
+        int httpResponseCode = http.POST(postData);
+    
+        // Verifica a resposta do servidor
+        if (httpResponseCode > 0) {
+          String response = http.getString();  // Obtém a resposta
+          Serial.println("Resposta do servidor: " + response);
+        } else {
+          Serial.println("Erro na requisição POST");
+        }
+    
+        http.end();  // Fecha a conexão
+      } else {
+        Serial.println("Falha na conexão Wi-Fi");
+      }
+    }
+    
+    void loop() {
+      // Não precisa fazer nada no loop principal
+    }
+    ```
+    
 
