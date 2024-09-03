@@ -293,6 +293,28 @@ Gere um json no formato OpenAPI para o endpoint https://sistema-universitario.gl
       delay(1000);
     }
     ```
+- Saída serial - permite comunicação com um computador via porta serial
+- Imprimir caracteres ASCII
+```javascript
+    void setup() {
+        // definir taxa de transmissão (bauds)
+        Serial.begin(9600);
+    }
+    
+    void loop() {
+        // imprimir mensagem
+        Serial.println("Arduino is ok");
+        // Verifica se há dados disponíveis na porta serial
+        if (Serial.available() > 0) {
+            // Lê a string digitada pelo usuário
+            String texto = Serial.readStringUntil('\n'); // Lê até o usuário pressionar Enter
+            // Imprime o texto lido no monitor serial
+            Serial.print("Você digitou: ");
+            Serial.println(texto);
+        }
+    }
+```
+
 - Exemplo 3 leds piscando de forma aleatória
     ```javascript
     // Defina os pinos dos LEDs
@@ -371,8 +393,140 @@ Gere um json no formato OpenAPI para o endpoint https://sistema-universitario.gl
       lastButtonState = buttonState;
     }
     ```
-    - Exemplo sensor de temperatura (DS 18B20 - pinos: alimentação, leitura e terra)
-    - Uso de bibliotecas Arduino [Referência](https://www.arduino.cc/reference/en/libraries/)
+- Exemplo [display de 7 segmentos](https://docs.wokwi.com/pt-BR/parts/wokwi-7segment)
+    - P(2) - S(A), P(3) - S(B), P(4) - S(C), P(5) - S(D), P(6) - S(E), P(7) - S(F), P(8) - S(G)
+    - COM2 - GND
+    ```javascript
+    const int segmentPins[8] = {2, 3, 4, 5, 6, 7, 8};
+    
+    const byte numbers[11] = {
+      B11111100, // 0
+      B01100000, // 1
+      B11011010, // 2
+      B11110010, // 3
+      B01100110, // 4
+      B10110110, // 5
+      B10111110, // 6
+      B11100000, // 7
+      B11111110, // 8
+      B11110110  // 9
+    };
+    
+    void setup() {
+    
+      for (int i = 0; i < 7; i++) {
+        pinMode(segmentPins[i], OUTPUT);
+      }
+    
+    }
+    
+    void loop() {
+    
+      for (int i = 0; i < 10; i++) 
+      {
+        displayNumber(i);
+        delay(1000);
+      }
+    }
+    
+    
+    void displayNumber(int num) {
+    
+      for (int i = 0; i < 8; i++) {
+        digitalWrite(segmentPins[i], HIGH);
+      }
+    
+    
+      for (int i = 0; i < 8; i++) {
+        if (bitRead(numbers[num], i) == LOW) {
+          digitalWrite(segmentPins[7-i], LOW);
+        }
+      }
+    
+    }
+    
+    ```
+- Uso de [bibliotecas Arduino](https://www.arduino.cc/reference/en/libraries/)
+- Exemplo [motor](https://docs.wokwi.com/pt-BR/parts/wokwi-stepper-motor)
+    - Definir no `diagram.json`:
+    ```json
+        {
+      "version": 1,
+      "author": "Michael Möller",
+      "editor": "wokwi",
+      "parts": [
+        { "type": "wokwi-arduino-uno", "id": "uno", "top": 160.98, "left": -237.02, "attrs": {} },
+        {
+          "type": "wokwi-stepper-motor",
+          "id": "sw1",
+          "top": -139.49,
+          "left": -191.12,
+          "attrs": { "gearRatio": "2:1", "display": "steps", "arrow": "orange" }
+        }
+      ],
+      "connections": [
+        [ "sw1:B-", "uno:8", "green", [ "v0" ] ],
+        [ "sw1:A-", "uno:11", "yellow", [ "v0" ] ],
+        [ "sw1:B+", "uno:9", "red", [ "v0" ] ],
+        [ "sw1:A+", "uno:10", "blue", [ "v0" ] ]
+      ],
+      "dependencies": {}
+    }
+    ```
+- Utilizar biblioteca `Stepper` do Arduino para controlar o motor de passo
+    ```javascript
+    #include <Stepper.h>
+    
+    const int stepsPerRevolution = 200;  // change this to fit the number of steps per revolution
+    // for your motor
+    
+    // initialize the stepper library on pins 8 through 11:
+    Stepper myStepper(stepsPerRevolution, 8, 9, 10, 11);
+    
+    void setup() {
+      // set the speed at 60 rpm:
+      myStepper.setSpeed(60);
+      // initialize the serial port:
+      Serial.begin(9600);
+    }
+    
+    void loop() {
+      // step one revolution  in one direction:
+      Serial.println("clockwise");
+      myStepper.step(stepsPerRevolution);
+      delay(500);
+    
+      // step one revolution in the other direction:
+      Serial.println("counterclockwise");
+      myStepper.step(-stepsPerRevolution);
+      delay(500);
+    }
+    ```
+- Exemplo [servo](https://docs.wokwi.com/pt-BR/parts/wokwi-servo)
+    - Adicionar a biblioteca `Servo` no arquivo `libraries.txt`
+    ```javascript
+    #include <Servo.h>
+    
+    Servo arm; // Create a "Servo" object called "arm"
+    float pos = 0.0; // Variable where the arm's position will be stored (in degrees)
+    float step = 1.0; // Variable used for the arm's position step
+    
+    void setup() {
+    
+      arm.attach(2); // Attache the arm to the pin 2
+      arm.write(pos); // Initialize the arm's position to 0 (leftmost)
+    
+    }
+    
+    void loop() {
+    
+      arm.write(pos);
+      delay(100);
+      pos++;
+    
+    }
+    ```
+- Exemplo sensor de temperatura (DS 18B20 - pinos: alimentação, leitura e terra)
     ```javascript
     // After running the simulator, click on the DS18B20 chip to change the temperature
     // Chip by bonnyr, source code: https://github.com/bonnyr/wokwi-ds1820-custom-chip/
@@ -384,19 +538,18 @@ Gere um json no formato OpenAPI para o endpoint https://sistema-universitario.gl
     DallasTemperature sensor(&oneWire);
     
     void setup(void) {
-      Serial.begin(115200);
-      delay(2);
-      sensor.begin();
-      delay(20);
+        Serial.begin(115200);
+        delay(2);
+        sensor.begin();
+        delay(20);
     }
     
     void loop(void) {
-      sensor.requestTemperatures();
-      Serial.print("Temperature is: ");
-      delay(10);
-      Serial.println(sensor.getTempCByIndex(0));
-      delay(1000);
+        sensor.requestTemperatures();
+        Serial.print("Temperature is: ");
+        delay(10);
+        Serial.println(sensor.getTempCByIndex(0));
+        delay(1000);
     }
     ```
-    
-    
+
