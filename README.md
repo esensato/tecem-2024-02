@@ -350,58 +350,44 @@ Gere um json no formato OpenAPI para o endpoint https://sistema-universitario.gl
       delay(random(500, 1501));
     }
     ```
-- Exemplo [push button](https://docs.wokwi.com/pt-BR/parts/wokwi-pushbutton) para ligar e desligar um led (obs: no push button a entrada e saída são invertidas)
+- Exemplo [push button](https://docs.wokwi.com/pt-BR/parts/wokwi-pushbutton) 
+    - btn1:2r - uno:7
+    - btn1:1l - gnd
     ```javascript
-    // Defina o pino do LED e do botão
-    const int ledPin = 13;
-    const int buttonPin = 2;
-    
-    // Variáveis para armazenar o estado do botão e do LED
-    int buttonState = 0;
-    int lastButtonState = 0;
-    bool ledState = false;
+    #define LED_PIN 9
+    #define BUTTON_PIN 7
     
     void setup() {
-    
-      Serial.begin(9600);
-      // Configure o pino do LED como saída
-      pinMode(ledPin, OUTPUT);
-      
-      // Configure o pino do botão como entrada com pull-up interno
-      pinMode(buttonPin, INPUT_PULLUP);
-      
-      // Inicialize o LED apagado
-      digitalWrite(ledPin, LOW);
+      pinMode(LED_PIN, OUTPUT);
+      pinMode(BUTTON_PIN, INPUT_PULLUP);
     }
     
     void loop() {
-    
-      // Leia o estado atual do botão
-      buttonState = digitalRead(buttonPin);
-          Serial.print(buttonState);
-      // Verifique se o botão foi pressionado (transição de HIGH para LOW)
-      if (buttonState == LOW && lastButtonState == HIGH) {
-        // Troque o estado do LED
-        ledState = !ledState;
-        // Atualize o estado do LED
-        digitalWrite(ledPin, ledState ? HIGH : LOW);
-        // Espere um tempo para debouncing
-        delay(50);
+      int button_val = digitalRead(BUTTON_PIN);
+      if (button_val == 0) {
+        digitalWrite(LED_PIN, HIGH);
+      } else {
+        digitalWrite(LED_PIN, LOW);
       }
-      
-      // Armazene o estado atual do botão para a próxima iteração
-      lastButtonState = buttonState;
     }
     ```
 - Exemplo [joystick](https://docs.wokwi.com/pt-BR/parts/wokwi-analog-joystick)
     - Utilizar portas seriais
-
+        - joystick1:VERT - A0 (1023 - cima, 0 - baixo)
+        - joystick1:HORIZ - A1 (1023 - direita, 0 - esquerda)
+        - joystick1:SEL - uno:0 (porta digital - true para solto e false para pressionado)
+        
     ```javascript
+    #define LED_L_PIN 9
+    #define LED_R_PIN 8
+    
     #define VERT_PIN A0
     #define HORZ_PIN A1
-    #define SEL_PIN  2
+    #define SEL_PIN  0
     
     void setup() {
+      pinMode(LED_L_PIN, OUTPUT);
+      pinMode(LED_R_PIN, OUTPUT);
       pinMode(VERT_PIN, INPUT);
       pinMode(HORZ_PIN, INPUT);
       pinMode(SEL_PIN, INPUT_PULLUP);
@@ -410,10 +396,24 @@ Gere um json no formato OpenAPI para o endpoint https://sistema-universitario.gl
     void loop() {
       int vert = analogRead(VERT_PIN);
       int horz = analogRead(HORZ_PIN);
-      bool selPressed = digitalRead(SEL_PIN) == LOW;
-      // horz vai de 0 (direita) a 1023 (esquerda)
-      // vert vai de 0 (parte inferior) a 1023 (parte superior)
-      // selPressed é true se o joystick estiver pressionado
+      int sel = digitalRead(SEL_PIN);
+    
+      if (sel) {
+        digitalWrite(LED_L_PIN, LOW);
+        digitalWrite(LED_R_PIN, LOW); 
+      } else {
+        digitalWrite(LED_L_PIN, HIGH);
+        digitalWrite(LED_R_PIN, HIGH);  
+      }
+    
+      if (horz == 1023) {
+        digitalWrite(LED_L_PIN, HIGH);
+        digitalWrite(LED_R_PIN, LOW);
+      } else  if (horz == 0){
+        digitalWrite(LED_L_PIN, LOW);
+        digitalWrite(LED_R_PIN, HIGH); 
+      }
+    
     }
     ```
 - Exercício: Acender 4 leds conforme o movimento realizado pelo *joysctick*
@@ -879,189 +879,192 @@ void callback(char* topic, byte* payload, unsigned int length) {
 - Outro broker conhecido é o [HiveMQ](https://www.hivemq.com)
     - [Broker público](https://www.hivemq.com/mqtt/public-mqtt-broker/)
     - [Broker Cloud](https://www.hivemq.com/company/get-hivemq/)
-
-#include <WiFi.h>  
-#include <PubSubClient.h>
-#include <WiFiClientSecure.h>
-
-//---- WiFi settings
-const char* ssid = "Wokwi-GUEST";
-const char* password = "";
- 
-//---- HiveMQ Cloud Broker settings
-const char* mqtt_server = "c85bebf2959848df83e4faa0fc216316.s1.eu.hivemq.cloud"; // replace with your HiveMQ Cluster URL
-const char* mqtt_username = "teste"; // replace with your Username
-const char* mqtt_password = "T&sTe1234"; // replace with your Password
-const int mqtt_port = 8883;
-
-WiFiClientSecure espClient;  
-PubSubClient client(espClient);
-unsigned long lastMsg = 0;
-#define MSG_BUFFER_SIZE (500)
-char msg[MSG_BUFFER_SIZE];
-int value = 0;
-
-// Variables to store received values
-bool ledValue = false;
-int brilhoValue = 0;
-int nivelAguaValue = 0;
-int umidadeSoloValue = 0;
-
-
-// HiveMQ Cloud Let's Encrypt CA certificate
-static const char *root_ca PROGMEM = R"EOF(
------BEGIN CERTIFICATE-----
-MIIFazCCA1OgAwIBAgIRAIIQz7DSQONZRGPgu2OCiwAwDQYJKoZIhvcNAQELBQAw
-TzELMAkGA1UEBhMCVVMxKTAnBgNVBAoTIEludGVybmV0IFNlY3VyaXR5IFJlc2Vh
-cmNoIEdyb3VwMRUwEwYDVQQDEwxJU1JHIFJvb3QgWDEwHhcNMTUwNjA0MTEwNDM4
-WhcNMzUwNjA0MTEwNDM4WjBPMQswCQYDVQQGEwJVUzEpMCcGA1UEChMgSW50ZXJu
-ZXQgU2VjdXJpdHkgUmVzZWFyY2ggR3JvdXAxFTATBgNVBAMTDElTUkcgUm9vdCBY
-MTCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBAK3oJHP0FDfzm54rVygc
-h77ct984kIxuPOZXoHj3dcKi/vVqbvYATyjb3miGbESTtrFj/RQSa78f0uoxmyF+
-0TM8ukj13Xnfs7j/EvEhmkvBioZxaUpmZmyPfjxwv60pIgbz5MDmgK7iS4+3mX6U
-A5/TR5d8mUgjU+g4rk8Kb4Mu0UlXjIB0ttov0DiNewNwIRt18jA8+o+u3dpjq+sW
-T8KOEUt+zwvo/7V3LvSye0rgTBIlDHCNAymg4VMk7BPZ7hm/ELNKjD+Jo2FR3qyH
-B5T0Y3HsLuJvW5iB4YlcNHlsdu87kGJ55tukmi8mxdAQ4Q7e2RCOFvu396j3x+UC
-B5iPNgiV5+I3lg02dZ77DnKxHZu8A/lJBdiB3QW0KtZB6awBdpUKD9jf1b0SHzUv
-KBds0pjBqAlkd25HN7rOrFleaJ1/ctaJxQZBKT5ZPt0m9STJEadao0xAH0ahmbWn
-OlFuhjuefXKnEgV4We0+UXgVCwOPjdAvBbI+e0ocS3MFEvzG6uBQE3xDk3SzynTn
-jh8BCNAw1FtxNrQHusEwMFxIt4I7mKZ9YIqioymCzLq9gwQbooMDQaHWBfEbwrbw
-qHyGO0aoSCqI3Haadr8faqU9GY/rOPNk3sgrDQoo//fb4hVC1CLQJ13hef4Y53CI
-rU7m2Ys6xt0nUW7/vGT1M0NPAgMBAAGjQjBAMA4GA1UdDwEB/wQEAwIBBjAPBgNV
-HRMBAf8EBTADAQH/MB0GA1UdDgQWBBR5tFnme7bl5AFzgAiIyBpY9umbbjANBgkq
-hkiG9w0BAQsFAAOCAgEAVR9YqbyyqFDQDLHYGmkgJykIrGF1XIpu+ILlaS/V9lZL
-ubhzEFnTIZd+50xx+7LSYK05qAvqFyFWhfFQDlnrzuBZ6brJFe+GnY+EgPbk6ZGQ
-3BebYhtF8GaV0nxvwuo77x/Py9auJ/GpsMiu/X1+mvoiBOv/2X/qkSsisRcOj/KK
-NFtY2PwByVS5uCbMiogziUwthDyC3+6WVwW6LLv3xLfHTjuCvjHIInNzktHCgKQ5
-ORAzI4JMPJ+GslWYHb4phowim57iaztXOoJwTdwJx4nLCgdNbOhdjsnvzqvHu7Ur
-TkXWStAmzOVyyghqpZXjFaH3pO3JLF+l+/+sKAIuvtd7u+Nxe5AW0wdeRlN8NwdC
-jNPElpzVmbUq4JUagEiuTDkHzsxHpFKVK7q4+63SM1N95R1NbdWhscdCb+ZAJzVc
-oyi3B43njTOQ5yOf+1CceWxG1bQVs5ZufpsMljq4Ui0/1lvh+wjChP4kqKOJ2qxq
-4RgqsahDYVvTH9w7jXbyLeiNdd8XM2w9U/t7y0Ff/9yi0GE44Za4rF2LN9d11TPA
-mRGunUHBcnWEvgJBQl9nJEiU0Zsnvgc/ubhPgXRR4Xq37Z0j4r7g1SgEEzwxA57d
-emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
------END CERTIFICATE-----
-)EOF";
-
-void setup_wifi() {
-  delay(10);
-  // We start by connecting to a WiFi network
-  Serial.println();
-  Serial.print("Connecting to ");
-  Serial.println(ssid);
-
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, password);
-
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-
-  randomSeed(micros());
-
-  Serial.println("");
-  Serial.println("WiFi connected");
-  Serial.println("IP address: ");
-  Serial.println(WiFi.localIP());
-}
-
-void callback(char* topic, byte* payload, unsigned int length) {
-  Serial.print("Message arrived [");
-  Serial.print(topic);
-  Serial.print("] ");
-  
-  // Convert payload to string
-  String payloadStr;
-  for (int i = 0; i < length; i++) {
-    payloadStr += (char)payload[i];
-  }
-  
-  // Store values based on topic
-  if (strcmp(topic, "home/alecrim/led") == 0) {
-    if (payloadStr == "true") {
-      ledValue = true;
-    } else {
-      ledValue = false;
+    - [Hivemq certificado](https://letsencrypt.org/certs/isrgrootx1.pem)
+    ```javascript
+    #include <WiFi.h>  
+    #include <PubSubClient.h>
+    #include <WiFiClientSecure.h>
+    
+    //---- WiFi settings
+    const char* ssid = "Wokwi-GUEST";
+    const char* password = "";
+     
+    //---- HiveMQ Cloud Broker settings
+    const char* mqtt_server = "c85bebf2959848df83e4faa0fc216316.s1.eu.hivemq.cloud"; // replace with your HiveMQ Cluster URL
+    const char* mqtt_username = "teste"; // replace with your Username
+    const char* mqtt_password = "T&sTe1234"; // replace with your Password
+    const int mqtt_port = 8883;
+    
+    WiFiClientSecure espClient;  
+    PubSubClient client(espClient);
+    unsigned long lastMsg = 0;
+    #define MSG_BUFFER_SIZE (500)
+    char msg[MSG_BUFFER_SIZE];
+    int value = 0;
+    
+    // Variables to store received values
+    bool ledValue = false;
+    int brilhoValue = 0;
+    int nivelAguaValue = 0;
+    int umidadeSoloValue = 0;
+    
+    
+    // HiveMQ Cloud Let's Encrypt CA certificate
+    static const char *root_ca PROGMEM = R"EOF(
+    -----BEGIN CERTIFICATE-----
+    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
+    -----END CERTIFICATE-----
+    )EOF";
+    
+    void setup_wifi() {
+      delay(10);
+      // We start by connecting to a WiFi network
+      Serial.println();
+      Serial.print("Connecting to ");
+      Serial.println(ssid);
+    
+      WiFi.mode(WIFI_STA);
+      WiFi.begin(ssid, password);
+    
+      while (WiFi.status() != WL_CONNECTED) {
+        delay(500);
+        Serial.print(".");
+      }
+    
+      randomSeed(micros());
+    
+      Serial.println("");
+      Serial.println("WiFi connected");
+      Serial.println("IP address: ");
+      Serial.println(WiFi.localIP());
     }
-  } else if (strcmp(topic, "home/alecrim/brilho") == 0) {
-    brilhoValue = payloadStr.toInt();
-  }
-  
-  Serial.println(payloadStr);
-}
-
-void reconnect() {
-  // Loop until we’re reconnected
-  while (!client.connected()) {
-    Serial.print("Attempting MQTT connection… ");
-    String clientId = "ESP32Client";
-    // Attempt to connect
-    if (client.connect(clientId.c_str(), mqtt_username, mqtt_password)) {
-      Serial.println("connected!");
-      // client.publish("testTopic", "Hello World!");
-      // … and resubscribe
-      client.subscribe("home/alecrim/led");
-      client.subscribe("home/alecrim/brilho");
-      client.subscribe("home/alecrim/nivel_agua");
-      client.subscribe("home/alecrim/umidade_solo");
-    } else {
-      Serial.print("failed, rc = ");
-      Serial.print(client.state());
-      Serial.println(" try again in 5 seconds");
-      // Wait 5 seconds before retrying
-      delay(5000);
+    
+    void callback(char* topic, byte* payload, unsigned int length) {
+      Serial.print("Message arrived [");
+      Serial.print(topic);
+      Serial.print("] ");
+      
+      // Convert payload to string
+      String payloadStr;
+      for (int i = 0; i < length; i++) {
+        payloadStr += (char)payload[i];
+      }
+      
+      // Store values based on topic
+      if (strcmp(topic, "home/alecrim/led") == 0) {
+        if (payloadStr == "true") {
+          ledValue = true;
+        } else {
+          ledValue = false;
+        }
+      } else if (strcmp(topic, "home/alecrim/brilho") == 0) {
+        brilhoValue = payloadStr.toInt();
+      }
+      
+      Serial.println(payloadStr);
     }
-  }
-}
-
-void setup() {
-  delay(500);
-  // When opening the Serial Monitor, select 9600 Baud
-  Serial.begin(115200);
-  delay(500);
-
-  setup_wifi();
-
-  espClient.setCACert(root_ca);
-  client.setServer(mqtt_server, mqtt_port);
-  client.setCallback(callback);
-}
-
-void loop() {
-  if (!client.connected()) {
-    reconnect();
-  }
-  
-  client.loop();
-
-  unsigned long now = millis();
-  if (now - lastMsg > 5000) {
-    lastMsg = now;
-    ++value;
     
-    // Convert integer value to char array
-    char valueStr[10]; // Adjust size based on your integer range
-    snprintf(valueStr, sizeof(valueStr), "%d", value);
+    void reconnect() {
+      // Loop until we’re reconnected
+      while (!client.connected()) {
+        Serial.print("Attempting MQTT connection… ");
+        String clientId = "ESP32Client";
+        // Attempt to connect
+        if (client.connect(clientId.c_str(), mqtt_username, mqtt_password)) {
+          Serial.println("connected!");
+          // client.publish("testTopic", "Hello World!");
+          // … and resubscribe
+          client.subscribe("home/alecrim/led");
+          client.subscribe("home/alecrim/brilho");
+          client.subscribe("home/alecrim/nivel_agua");
+          client.subscribe("home/alecrim/umidade_solo");
+        } else {
+          Serial.print("failed, rc = ");
+          Serial.print(client.state());
+          Serial.println(" try again in 5 seconds");
+          // Wait 5 seconds before retrying
+          delay(5000);
+        }
+      }
+    }
     
-    // Construct your message with the formatted value
-    snprintf(msg, MSG_BUFFER_SIZE, "%s", valueStr);
-    Serial.print("Publish message: ");
-    Serial.println(msg);
-    // Publish the message to the topic
-    client.publish("home/alecrim/nivel_agua", msg);
+    void setup() {
+      delay(500);
+      // When opening the Serial Monitor, select 9600 Baud
+      Serial.begin(115200);
+      delay(500);
     
-    // Publish other values
-    client.publish("home/alecrim/led", ledValue ? "true" : "false");
+      setup_wifi();
     
-    char brilhoStr[10];
-    snprintf(brilhoStr, sizeof(brilhoStr), "%d", brilhoValue);
-    client.publish("home/alecrim/brilho", brilhoStr);
+      espClient.setCACert(root_ca);
+      client.setServer(mqtt_server, mqtt_port);
+      client.setCallback(callback);
+    }
     
-    char umidadeSoloStr[10];
-    snprintf(umidadeSoloStr, sizeof(umidadeSoloStr), "%d", umidadeSoloValue);
-    client.publish("home/alecrim/umidade_solo", umidadeSoloStr);
-  }
-}
+    void loop() {
+      if (!client.connected()) {
+        reconnect();
+      }
+      
+      client.loop();
+    
+      unsigned long now = millis();
+      if (now - lastMsg > 5000) {
+        lastMsg = now;
+        ++value;
+        
+        // Convert integer value to char array
+        char valueStr[10]; // Adjust size based on your integer range
+        snprintf(valueStr, sizeof(valueStr), "%d", value);
+        
+        // Construct your message with the formatted value
+        snprintf(msg, MSG_BUFFER_SIZE, "%s", valueStr);
+        Serial.print("Publish message: ");
+        Serial.println(msg);
+        // Publish the message to the topic
+        client.publish("home/alecrim/nivel_agua", msg);
+        
+        // Publish other values
+        client.publish("home/alecrim/led", ledValue ? "true" : "false");
+        
+        char brilhoStr[10];
+        snprintf(brilhoStr, sizeof(brilhoStr), "%d", brilhoValue);
+        client.publish("home/alecrim/brilho", brilhoStr);
+        
+        char umidadeSoloStr[10];
+        snprintf(umidadeSoloStr, sizeof(umidadeSoloStr), "%d", umidadeSoloValue);
+        client.publish("home/alecrim/umidade_solo", umidadeSoloStr);
+      }
+    }
+    ```
+    
 
 
