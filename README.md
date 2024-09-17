@@ -419,7 +419,7 @@ Gere um json no formato OpenAPI para o endpoint https://sistema-universitario.gl
 - Exercício: Acender 4 leds conforme o movimento realizado pelo *joysctick*
 - Exemplo [display de 7 segmentos](https://docs.wokwi.com/pt-BR/parts/wokwi-7segment)
     - P(2) - S(A), P(3) - S(B), P(4) - S(C), P(5) - S(D), P(6) - S(E), P(7) - S(F), P(8) - S(G)
-    - COM2 - GND
+    - COM2 - 5V
     ```javascript
     const int segmentPins[8] = {2, 3, 4, 5, 6, 7, 8};
     
@@ -470,6 +470,7 @@ Gere um json no formato OpenAPI para o endpoint https://sistema-universitario.gl
     }
     
     ```
+- Gerar números aleatórios com a função [random](https://www.arduino.cc/reference/en/language/functions/random-numbers/random/)
 - Uso de [bibliotecas Arduino](https://www.arduino.cc/reference/en/libraries/)
 - Exemplo [motor](https://docs.wokwi.com/pt-BR/parts/wokwi-stepper-motor)
     - Definir no `diagram.json`:
@@ -879,6 +880,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
 - Outro broker conhecido é o [HiveMQ](https://www.hivemq.com)
     - [Broker público](https://www.hivemq.com/mqtt/public-mqtt-broker/)
     - [Broker Cloud](https://www.hivemq.com/company/get-hivemq/)
+    - [Websocket Client](https://www.hivemq.com/demos/websocket-client/)
     - [Hivemq certificado](https://letsencrypt.org/certs/isrgrootx1.pem)
     ```javascript
     #include <WiFi.h>  
@@ -907,7 +909,6 @@ void callback(char* topic, byte* payload, unsigned int length) {
     int brilhoValue = 0;
     int nivelAguaValue = 0;
     int umidadeSoloValue = 0;
-    
     
     // HiveMQ Cloud Let's Encrypt CA certificate
     static const char *root_ca PROGMEM = R"EOF(
