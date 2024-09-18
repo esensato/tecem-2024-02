@@ -419,7 +419,37 @@ Gere um json no formato OpenAPI para o endpoint https://sistema-universitario.gl
 - Exercício: Acender 4 leds conforme o movimento realizado pelo *joysctick*
 - Exemplo [display de 7 segmentos](https://docs.wokwi.com/pt-BR/parts/wokwi-7segment)
     - P(2) - S(A), P(3) - S(B), P(4) - S(C), P(5) - S(D), P(6) - S(E), P(7) - S(F), P(8) - S(G)
-    - COM2 - 5V
+    - COM2 - GND
+    - Diagrama:
+    ```json
+    {
+      "version": 1,
+      "author": "Anonymous maker",
+      "editor": "wokwi",
+      "parts": [
+        { "type": "wokwi-arduino-uno", "id": "uno", "top": 48.6, "left": 18.6, "attrs": {} },
+        {
+          "type": "wokwi-7segment",
+          "id": "sevseg1",
+          "top": -119.82,
+          "left": 120.28,
+          "attrs": { "common": "cathode", "color": "#00ff00", "digits": "1", "colon": "" }
+        }
+      ],
+      "connections": [
+        [ "sevseg1:A", "uno:2", "#8f4814", [ "v-18.36", "h105.6" ] ],
+        [ "sevseg1:B", "uno:3", "red", [ "v-18.36", "h19.2", "v9.6", "h57.6" ] ],
+        [ "sevseg1:C", "uno:4", "gold", [ "v9.6", "h76.8" ] ],
+        [ "sevseg1:D", "uno:5", "green", [ "v19.2", "h86.4" ] ],
+        [ "sevseg1:E", "uno:6", "blue", [ "v28.8", "h96" ] ],
+        [ "sevseg1:F", "uno:7", "white", [ "v-18.36", "h-48", "v153.6", "h124.8" ] ],
+        [ "sevseg1:G", "uno:8", "gray", [ "v0.84", "h-9.6", "v115.2", "h76.8" ] ],
+        [ "sevseg1:COM.2", "uno:GND.1", "green", [ "h0", "v-37.56", "h-76.8", "v192", "h67.2" ] ]
+      ],
+      "dependencies": {}
+    }
+    ```
+    
     ```javascript
     const int segmentPins[8] = {2, 3, 4, 5, 6, 7, 8};
     
