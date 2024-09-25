@@ -613,6 +613,7 @@ Gere um json no formato OpenAPI para o endpoint https://sistema-universitario.gl
     ```
 
 - Exemplo sensor de temperatura (DS 18B20 - pinos: alimentação, leitura e terra)
+    - Ligar a leitura no pino 10
     ```javascript
     #include <OneWire.h>
     #include <DallasTemperature.h>
@@ -675,7 +676,7 @@ Gere um json no formato OpenAPI para o endpoint https://sistema-universitario.gl
         Serial.print(".");
       }
       Serial.println(" Conectado!");
-
+      Serial.println(WiFi.localIP());
     }
     
     void loop() {
@@ -716,7 +717,7 @@ Gere um json no formato OpenAPI para o endpoint https://sistema-universitario.gl
 
 #### MQTT
 - Exemplo [Mosquitto Broker](https://mosquitto.org/) para *publish*
-- Incluir a biblioteca `PubSubClient`
+- Incluir a biblioteca [PubSubClient](https://pubsubclient.knolleary.net/api)
     ```javascript
     #include <WiFi.h>
     #include <PubSubClient.h>
@@ -912,33 +913,39 @@ void callback(char* topic, byte* payload, unsigned int length) {
     - [Broker Cloud](https://www.hivemq.com/company/get-hivemq/)
     - [Websocket Client](https://www.hivemq.com/demos/websocket-client/)
     - [Hivemq certificado](https://letsencrypt.org/certs/isrgrootx1.pem)
+- Criar cluster e obter dados de acesso:  
+    <div style="width:500px; height:300px">
+    <img src="img/img7.png">
+    </div>
+- Trabalhando com *buffers* utilizando o `snprintf` (`%s` é *string*, `%d` para decimal)
     ```javascript
-    #include <WiFi.h>  
+    Serial.begin(115200);
+    delay(100);
+    char msg[100];
+    snprintf(msg, 100, "Valor %s", "Teste");
+    Serial.println(msg);
+    ```
+- Publicar uma mensagem em um tópico:
+    ```javascript
+    #include <WiFi.h>
     #include <PubSubClient.h>
     #include <WiFiClientSecure.h>
     
     //---- WiFi settings
-    const char* ssid = "Wokwi-GUEST";
-    const char* password = "";
-     
+    const char *ssid = "Wokwi-GUEST";
+    const char *password = "";
+    
     //---- HiveMQ Cloud Broker settings
-    const char* mqtt_server = "c85bebf2959848df83e4faa0fc216316.s1.eu.hivemq.cloud"; // replace with your HiveMQ Cluster URL
-    const char* mqtt_username = "teste"; // replace with your Username
-    const char* mqtt_password = "T&sTe1234"; // replace with your Password
+    const char *mqtt_server = ""; // replace with your HiveMQ Cluster URL
+    const char *mqtt_username = "";                                             // replace with your Username
+    const char *mqtt_password = "";                                         // replace with your Password
     const int mqtt_port = 8883;
     
-    WiFiClientSecure espClient;  
+    WiFiClientSecure espClient;
     PubSubClient client(espClient);
     unsigned long lastMsg = 0;
     #define MSG_BUFFER_SIZE (500)
     char msg[MSG_BUFFER_SIZE];
-    int value = 0;
-    
-    // Variables to store received values
-    bool ledValue = false;
-    int brilhoValue = 0;
-    int nivelAguaValue = 0;
-    int umidadeSoloValue = 0;
     
     // HiveMQ Cloud Let's Encrypt CA certificate
     static const char *root_ca PROGMEM = R"EOF(
@@ -975,7 +982,8 @@ void callback(char* topic, byte* payload, unsigned int length) {
     -----END CERTIFICATE-----
     )EOF";
     
-    void setup_wifi() {
+    void setup_wifi()
+    {
       delay(10);
       // We start by connecting to a WiFi network
       Serial.println();
@@ -985,7 +993,8 @@ void callback(char* topic, byte* payload, unsigned int length) {
       WiFi.mode(WIFI_STA);
       WiFi.begin(ssid, password);
     
-      while (WiFi.status() != WL_CONNECTED) {
+      while (WiFi.status() != WL_CONNECTED)
+      {
         delay(500);
         Serial.print(".");
       }
@@ -998,46 +1007,20 @@ void callback(char* topic, byte* payload, unsigned int length) {
       Serial.println(WiFi.localIP());
     }
     
-    void callback(char* topic, byte* payload, unsigned int length) {
-      Serial.print("Message arrived [");
-      Serial.print(topic);
-      Serial.print("] ");
-      
-      // Convert payload to string
-      String payloadStr;
-      for (int i = 0; i < length; i++) {
-        payloadStr += (char)payload[i];
-      }
-      
-      // Store values based on topic
-      if (strcmp(topic, "home/alecrim/led") == 0) {
-        if (payloadStr == "true") {
-          ledValue = true;
-        } else {
-          ledValue = false;
-        }
-      } else if (strcmp(topic, "home/alecrim/brilho") == 0) {
-        brilhoValue = payloadStr.toInt();
-      }
-      
-      Serial.println(payloadStr);
-    }
-    
-    void reconnect() {
+    void reconnect()
+    {
       // Loop until we’re reconnected
-      while (!client.connected()) {
+      while (!client.connected())
+      {
         Serial.print("Attempting MQTT connection… ");
         String clientId = "ESP32Client";
         // Attempt to connect
-        if (client.connect(clientId.c_str(), mqtt_username, mqtt_password)) {
+        if (client.connect(clientId.c_str(), mqtt_username, mqtt_password))
+        {
           Serial.println("connected!");
-          // client.publish("testTopic", "Hello World!");
-          // … and resubscribe
-          client.subscribe("home/alecrim/led");
-          client.subscribe("home/alecrim/brilho");
-          client.subscribe("home/alecrim/nivel_agua");
-          client.subscribe("home/alecrim/umidade_solo");
-        } else {
+        }
+        else
+        {
           Serial.print("failed, rc = ");
           Serial.print(client.state());
           Serial.println(" try again in 5 seconds");
@@ -1047,7 +1030,8 @@ void callback(char* topic, byte* payload, unsigned int length) {
       }
     }
     
-    void setup() {
+    void setup()
+    {
       delay(500);
       // When opening the Serial Monitor, select 9600 Baud
       Serial.begin(115200);
@@ -1057,45 +1041,300 @@ void callback(char* topic, byte* payload, unsigned int length) {
     
       espClient.setCACert(root_ca);
       client.setServer(mqtt_server, mqtt_port);
-      client.setCallback(callback);
     }
     
-    void loop() {
-      if (!client.connected()) {
+    void loop()
+    {
+      if (!client.connected())
+      {
         reconnect();
       }
-      
-      client.loop();
     
-      unsigned long now = millis();
-      if (now - lastMsg > 5000) {
-        lastMsg = now;
-        ++value;
+      // Construct your message with the formatted value
+      snprintf(msg, MSG_BUFFER_SIZE, "%s", "TESTE");
+      Serial.print("Publish message: ");
+      Serial.println(msg);
+      // Publish the message to the topic
+      client.publish("esp32/teste", msg);
+      delay(10000);
+    }
+    ```
+- Exemplo com *publish* e *subscribe*  
+
+      ```javascript
+      #include <WiFi.h>  
+      #include <PubSubClient.h>
+      // Não precisa incluir na biblioteca (libraries.txt)!!!
+      #include <WiFiClientSecure.h>
+      
+      #define MSG_BUFFER_SIZE (500)
+
+      const char* ssid = "Wokwi-GUEST";
+      const char* password = "";
         
-        // Convert integer value to char array
-        char valueStr[10]; // Adjust size based on your integer range
-        snprintf(valueStr, sizeof(valueStr), "%d", value);
-        
-        // Construct your message with the formatted value
-        snprintf(msg, MSG_BUFFER_SIZE, "%s", valueStr);
-        Serial.print("Publish message: ");
-        Serial.println(msg);
-        // Publish the message to the topic
-        client.publish("home/alecrim/nivel_agua", msg);
-        
-        // Publish other values
-        client.publish("home/alecrim/led", ledValue ? "true" : "false");
-        
-        char brilhoStr[10];
-        snprintf(brilhoStr, sizeof(brilhoStr), "%d", brilhoValue);
-        client.publish("home/alecrim/brilho", brilhoStr);
-        
-        char umidadeSoloStr[10];
-        snprintf(umidadeSoloStr, sizeof(umidadeSoloStr), "%d", umidadeSoloValue);
-        client.publish("home/alecrim/umidade_solo", umidadeSoloStr);
+      const char* mqtt_server = ""; // obter dos dados de acesso do cluster HiveMQ
+      const char* mqtt_username = ""; // usuário criado para o cluster HiveMQ
+      const char* mqtt_password = ""; // senha criada para o cluster HiveMQ
+      const int mqtt_port = 8883;
+      
+      WiFiClientSecure espClient;  
+      PubSubClient client(espClient);
+      unsigned long lastMsg = 0;
+
+      char msg[MSG_BUFFER_SIZE];
+      int value = 0;
+      
+      // Variables to store received values
+      bool ledValue = false;
+      int brilhoValue = 0;
+      int nivelAguaValue = 0;
+      int umidadeSoloValue = 0;
+      
+      // Obter o certificado do link especificado no link acima
+      static const char *root_ca PROGMEM = R"EOF(
+      -----BEGIN CERTIFICATE-----
+      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
+      -----END CERTIFICATE-----
+      )EOF";
+      
+      void setup_wifi() {
+        delay(10);
+        // We start by connecting to a WiFi network
+        Serial.println();
+        Serial.print("Connecting to ");
+        Serial.println(ssid);
+      
+        WiFi.mode(WIFI_STA);
+        WiFi.begin(ssid, password);
+      
+        while (WiFi.status() != WL_CONNECTED) {
+          delay(500);
+          Serial.print(".");
+        }
+      
+        randomSeed(micros());
+      
+        Serial.println("");
+        Serial.println("WiFi connected");
+        Serial.println("IP address: ");
+        Serial.println(WiFi.localIP());
       }
+      
+      void callback(char* topic, byte* payload, unsigned int length) {
+        Serial.print("Message arrived [");
+        Serial.print(topic);
+        Serial.print("] ");
+        
+        // Convert payload to string
+        String payloadStr;
+        for (int i = 0; i < length; i++) {
+          payloadStr += (char)payload[i];
+        }
+        
+        // Store values based on topic
+        if (strcmp(topic, "home/alecrim/led") == 0) {
+          if (payloadStr == "true") {
+            ledValue = true;
+          } else {
+            ledValue = false;
+          }
+        } else if (strcmp(topic, "home/alecrim/brilho") == 0) {
+          brilhoValue = payloadStr.toInt();
+        }
+        
+        Serial.println(payloadStr);
+      }
+      
+      void reconnect() {
+        // Loop until we’re reconnected
+        while (!client.connected()) {
+          Serial.print("Attempting MQTT connection… ");
+          String clientId = "ESP32Client";
+          // Attempt to connect
+          if (client.connect(clientId.c_str(), mqtt_username, mqtt_password)) {
+            Serial.println("connected!");
+            // client.publish("testTopic", "Hello World!");
+            // … and resubscribe
+            client.subscribe("home/alecrim/led");
+            client.subscribe("home/alecrim/brilho");
+            client.subscribe("home/alecrim/nivel_agua");
+            client.subscribe("home/alecrim/umidade_solo");
+          } else {
+            Serial.print("failed, rc = ");
+            Serial.print(client.state());
+            Serial.println(" try again in 5 seconds");
+            // Wait 5 seconds before retrying
+            delay(5000);
+          }
+        }
+      }
+      
+      void setup() {
+        delay(500);
+        // When opening the Serial Monitor, select 9600 Baud
+        Serial.begin(115200);
+        delay(500);
+      
+        setup_wifi();
+      
+        espClient.setCACert(root_ca);
+        client.setServer(mqtt_server, mqtt_port);
+        client.setCallback(callback);
+      }
+      
+      void loop() {
+        if (!client.connected()) {
+          reconnect();
+        }
+        
+        client.loop();
+      
+        unsigned long now = millis();
+        if (now - lastMsg > 5000) {
+          lastMsg = now;
+          ++value;
+          
+          // Convert integer value to char array
+          char valueStr[10]; // Adjust size based on your integer range
+          snprintf(valueStr, sizeof(valueStr), "%d", value);
+          
+          // Construct your message with the formatted value
+          snprintf(msg, MSG_BUFFER_SIZE, "%s", valueStr);
+            Serial.print("Publish message: ");
+            Serial.println(msg);
+            // Publish the message to the topic
+            client.publish("home/alecrim/nivel_agua", msg);
+            
+            // Publish other values
+            client.publish("home/alecrim/led", ledValue ? "true" : "false");
+            
+            char brilhoStr[10];
+            snprintf(brilhoStr, sizeof(brilhoStr), "%d", brilhoValue);
+            client.publish("home/alecrim/brilho", brilhoStr);
+            
+            char umidadeSoloStr[10];
+            snprintf(umidadeSoloStr, sizeof(umidadeSoloStr), "%d", umidadeSoloValue);
+            client.publish("home/alecrim/umidade_solo", umidadeSoloStr);
+          }
+        }
+        ```
+#### Think Speak
+- A plataforma (Think Speak)[https://thingspeak.com/] possui um mecanismo analítico para analisar os dados coletados pelos sensores
+- Efetuar o cadastro na plataforma
+- Criar um canal
+    ```javascript
+    #include <WiFi.h>
+    #include <OneWire.h>
+    #include <DallasTemperature.h>
+    
+    #define SENSOR_PIN 0
+    
+    OneWire oneWire(SENSOR_PIN);
+    DallasTemperature sensor(&oneWire);
+    
+    // Network information
+    char* ssid = "Wokwi-GUEST";
+    const char* password = "";
+    
+    // ThingSpeak settings
+    char server[] = "api.thingspeak.com";
+    String writeAPIKey = "45BQ8GHUMYG19C9B";
+    
+    
+    void setup(){
+      
+        Serial.begin(115200);
+        delay(2);
+        sensor.begin();
+        delay(20);
+        connectWiFi();
+        
+    }
+    
+    void loop(){
+    
+      sensor.requestTemperatures();
+      delay(10);
+      float temperatura = sensor.getTempCByIndex(0);
+      delay(3000);
+      httpRequest(temperatura);
+      Serial.print(temperatura);
+    
+    }
+    
+    void connectWiFi(){
+    
+        while (WiFi.status() != WL_CONNECTED){
+            WiFi.begin(ssid, password);
+            delay(3000);
+        }
+        Serial.println("Connected");
+    
+    }
+    
+    void httpRequest(float field1Data) {
+    
+        WiFiClient client;
+        
+        if (!client.connect(server, 80)){
+          
+            Serial.println("Connection failed");
+            client.stop();
+            return;     
+        }
+        
+        else{
+            
+            // Create data string to send to ThingSpeak.
+            String data = "field1=" + String(field1Data); //shows how to include additional field data in http post
+            
+            // POST data to ThingSpeak.
+            if (client.connect(server, 80)) {
+              
+                client.println("POST /update HTTP/1.1");
+                client.println("Host: api.thingspeak.com");
+                client.println("Connection: close");
+                client.println("User-Agent: ESP32WiFi/1.1");
+                client.println("X-THINGSPEAKAPIKEY: "+writeAPIKey);
+                client.println("Content-Type: application/x-www-form-urlencoded");
+                client.print("Content-Length: ");
+                client.print(data.length());
+                client.print("\n\n");
+                client.print(data);
+                
+                Serial.println("Request efetuado");
+                delay(250);
+            }
+        }
+        client.stop();
     }
     ```
     
-
-
