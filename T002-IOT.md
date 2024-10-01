@@ -1,12 +1,14 @@
 ## Trabalho IoT
-- Criar dois emuladores [ESP32](https://wokwi.com/projects/new/esp32)
+- Criar dois emuladores [ESP32](https://wokwi.com/projects/new/esp32) - pode ser online ou também pelo **VS Code** (neste caso, criar dois projetos)
 - Emulador 1:
     - Deve conter um sensor de temperatura e umidade **DTH22**
 - Emulador 2:
-    - Deve conter 3 leds (verde, amarelo e vermelho)
+    - Deve conter [leds de gráfico de barras](https://docs.wokwi.com/pt-BR/parts/wokwi-led-bar-graph)
+    - Deve conter um [buzzer](https://docs.wokwi.com/pt-BR/parts/wokwi-buzzer)
 - Programa node para controlar o fluxo de dados
     - Recebe via MQTT a leitura de umidade do Emulador1
     - Envia (MQTT) para o Emulador2 uma mensagem para ativar os leds conforme a umidade recebida
         -  0% - 25%  - led verde
         - 26% - 75%  - led amarelo
         - 75% - 100% - led vermelho
+        - Quando atingir um valor maior do que 80% deve-se emitir um alarme sonoro repetidamente no buzzer

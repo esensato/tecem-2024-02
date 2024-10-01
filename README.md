@@ -254,8 +254,85 @@ Gere um json no formato OpenAPI para o endpoint https://sistema-universitario.gl
 ## IoT
 
 - Acessar o emulador [Arduino Uno](https://wokwi.com/projects/new/arduino-uno) ou [instalar no VSCode](https://docs.wokwi.com/pt-BR/vscode/getting-started)
-- Pinos digitais (0-13): entrada ou saída (HIGH ou LOW)
-- GND: terra
+- Instalar no **VS Code** as extensões (e reiniciar o VS Code) - [Referência](https://docs.platformio.org/en/latest/integration/ide/vscode.html#quick-start):
+    - Wokwi
+    <div style="width:200px">
+    <img src="img/img8.png">
+    </div>
+
+    - PlatformIO IDE
+    <div style="width:200px">
+    <img src="img/img9.png">
+    </div>
+
+    - Clicar no ícone **PlatformIO: Home** (ícone da casa) na barra de ícones na parte inferior da tela do **VS Code**
+    <div style="width:200px">
+    <img src="img/img10.png">
+    </div>
+
+    - Iniciar um novo projeto (desmarcar a opção **Location: use default location!!!!**) e selecionar uma pasta para criar o projeto
+    <div style="width:350px">
+    <img src="img/img11.png">
+    </div>
+
+    - Criar dois arquivos `diagram.json` e `wokwi.toml` dentro da estrutura do projeto
+    <div style="width:200px">
+    <img src="img/img12.png">
+    </div>
+
+    - Conteúdo dos arquivos (respectivamente `diagram.json` e `wokwi.toml`):
+    ```json
+    {
+        "version": 1,
+        "author": "Anonymous maker",
+        "editor": "wokwi",
+        "parts": [
+            {
+                "type": "board-esp32-devkit-c-v4",
+                "id": "esp",
+                "top": 0,
+                "left": 0,
+                "attrs": {}
+            }
+        ],
+        "connections": [
+            [
+                "esp:TX",
+                "$serialMonitor:RX",
+                "",
+                []
+            ],
+            [
+                "esp:RX",
+                "$serialMonitor:TX",
+                "",
+                []
+            ]
+        ],
+        "dependencies": {}
+    }
+    ```
+    ```javascript    
+    [env:esp32doit-devkit-v1]
+    platform = espressif32
+    board = esp32doit-devkit-v1
+    framework = arduino
+    lib_deps = PubSubClient
+    ```
+    - Realizar o *build* da aplicação (pressionar `Control + Shift + P` ou `Command + Shift + P`)
+    <div style="width:300px">
+    <img src="img/img13.png">
+    </div>
+
+    - Executar o emulador
+    <div style="width:300px">
+    <img src="img/img14.png">
+    </div>
+
+    - Editar o código (pressionar `main.cpp`)
+    <div style="width:200px">
+    <img src="img/img15.png">
+    </div>
 #### Linguagem Arduino
 - É uma linguagem para progeramação do **Arduino** [Linguagem Arduino](https://www.arduino.cc/reference/pt/)
 - Código básico
@@ -662,11 +739,15 @@ Gere um json no formato OpenAPI para o endpoint https://sistema-universitario.gl
     ```
 
 - Exemplo de requisição *POST*
-    - Uso da biblioteca `HTTPClient`
+    - Uso da biblioteca `HttpClient`
+    - Executar um *POST* no *endpoint* `https://teste-iot-server.glitch.me/temperatura`
+    - No corpo da requisição, enviar `{"sensor":"ESP32", "temperatura": 30}`
     ```javascript
     #include <WiFi.h>
     #include <HTTPClient.h>
     
+    #define TEMPLATE "{\"sensor\":\"ESP32\",\"temperatura\":%d}"
+
     void setup() {
       Serial.begin(9600);
       Serial.print("Conectando-se ao Wi-Fi");
@@ -691,7 +772,10 @@ Gere um json no formato OpenAPI para o endpoint https://sistema-universitario.gl
         http.addHeader("Content-Type", "application/json");
     
         // Dados JSON que serão enviados
-        String postData = "{\"sensor\":\"ESP32\",\"temperatura\":\"30\"}";
+        int temp = random(10, 40);
+        char postData[100];
+        // Copia a temperatura para o %d definido no template (TEMPLATE)
+        sprintf(postData, TEMPLATE, temp);
     
         // Realiza a requisição POST
         int httpResponseCode = http.POST(postData);
@@ -718,6 +802,15 @@ Gere um json no formato OpenAPI para o endpoint https://sistema-universitario.gl
 #### MQTT
 - Exemplo [Mosquitto Broker](https://mosquitto.org/) para *publish*
 - Incluir a biblioteca [PubSubClient](https://pubsubclient.knolleary.net/api)
+- No caso do **VS Code** a biblioteca deve ser incluída no arquivo `platformio.ini`
+    ```javascript
+    [env:esp32doit-devkit-v1]
+    platform = espressif32
+    board = esp32doit-devkit-v1
+    framework = arduino
+    lib_deps = PubSubClient
+    ```
+- Exemplo de código para publicar uma mensagem no **Mosquitto Broker**
     ```javascript
     #include <WiFi.h>
     #include <PubSubClient.h>
