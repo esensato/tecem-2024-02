@@ -313,11 +313,10 @@ Gere um json no formato OpenAPI para o endpoint https://sistema-universitario.gl
     }
     ```
     ```javascript    
-    [env:esp32doit-devkit-v1]
-    platform = espressif32
-    board = esp32doit-devkit-v1
-    framework = arduino
-    lib_deps = PubSubClient
+    [wokwi]
+    version = 1
+    firmware = '.pio/build/esp32doit-devkit-v1/firmware.bin'
+    elf = '.pio/build/esp32doit-devkit-v1/firmware.elf'
     ```
     - Realizar o *build* da aplicação (pressionar `Control + Shift + P` ou `Command + Shift + P`)
     <div style="width:300px">
@@ -1340,7 +1339,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
         }
         ```
 #### Think Speak
-- A plataforma (Think Speak)[https://thingspeak.com/] possui um mecanismo analítico para analisar os dados coletados pelos sensores
+- A plataforma [Think Speak](https://thingspeak.com/) possui um mecanismo analítico para analisar os dados coletados pelos sensores
 - Efetuar o cadastro na plataforma
 - Criar um canal
     ```javascript
