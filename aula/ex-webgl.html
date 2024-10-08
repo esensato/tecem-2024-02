@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebGL Exemplo Básico</title>
+    <style>
+        canvas {
+            display: block;
+            margin: 0 auto;
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="meuCanvas" width="500" height="500"></canvas>
+
+    <script>
+        // Obter o contexto WebGL do canvas
+        const canvas = document.getElementById('meuCanvas');
+        const gl = canvas.getContext('webgl');
+
+        // Verificar se o WebGL está disponível
+        if (!gl) {
+            alert("WebGL não está disponível no seu navegador.");
+            throw new Error("WebGL não suportado.");
+        }
+
+        // Definir os dados do triângulo
+        const vertices = new Float32Array([
+            0.0, 1.0, 0.0, // Topo
+            -1.0, -1.0, 0.0, // Esquerda
+            1.0, -1.0, 0.0  // Direita
+        ]);
+
+        // Criar um buffer e ligar os dados dos vértices
+        const buffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+        gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+
+        // Criar o código de shader de vértice
+        const vertexShaderSource = `
+            attribute vec3 aPosition;
+            void main(void) {
+                gl_Position = vec4(aPosition, 1.0);
+            }
+        `;
+
+        // Criar o código de shader de fragmento
+        const fragmentShaderSource = `
+            void main(void) {
+                gl_FragColor = vec4(0.0, 0.8, 1.0, 1.0); // Cor azul
+            }
+        `;
+
+        // Função para compilar um shader
+        function compileShader(source, type) {
+            const shader = gl.createShader(type);
+            gl.shaderSource(shader, source);
+            gl.compileShader(shader);
+
+            if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+                console.error('Erro ao compilar o shader:', gl.getShaderInfoLog(shader));
+                gl.deleteShader(shader);
+                return null;
+            }
+
+            return shader;
+        }
+
+        // Compilar os shaders de vértice e fragmento
+        const vertexShader = compileShader(vertexShaderSource, gl.VERTEX_SHADER);
+        const fragmentShader = compileShader(fragmentShaderSource, gl.FRAGMENT_SHADER);
+
+        // Criar um programa e anexar os shaders
+        const program = gl.createProgram();
+        gl.attachShader(program, vertexShader);
+        gl.attachShader(program, fragmentShader);
+        gl.linkProgram(program);
+
+        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+            console.error('Erro ao linkar o programa:', gl.getProgramInfoLog(program));
+            gl.deleteProgram(program);
+        } else {
+
+            // Ligar o programa
+            gl.useProgram(program);
+
+            // Associar os dados do buffer ao shader
+            const aPosition = gl.getAttribLocation(program, 'aPosition');
+            gl.enableVertexAttribArray(aPosition);
+            gl.vertexAttribPointer(aPosition, 3, gl.FLOAT, false, 0, 0);
+
+            // Definir a cor de fundo
+            gl.clearColor(0.9, 0.9, 0.9, 1.0);
+
+            // Limpar o buffer de cores
+            gl.clear(gl.COLOR_BUFFER_BIT);
+
+            // Desenhar o triângulo
+            gl.drawArrays(gl.TRIANGLES, 0, 3);
+        }
+
+
+    </script>
+</body>
+
+</html>

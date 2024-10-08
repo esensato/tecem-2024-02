@@ -1439,4 +1439,135 @@ Gere um json no formato OpenAPI para o endpoint https://sistema-universitario.gl
         client.stop();
     }
     ```
+***
+## Realidade Mista
+- Instalar (iOS) o **XR Viewr** (Android não precisa!)
+- Abrir site `threejs.org` e buscar pelo exemplo (abrir em nova tab) `ar - cones`
+- Para instalar no *desktop* via **Chrome** pesquisar por `webxr emulator chrome extension` e habilitar via **Ferramentas do Desenvolvedor**
+- Criar um projeto no [glitch](https://glitch.com/edit/#!/remix/glitch-blank-node)
+- Preparação para o projeto:
+- Arquivo `style.css`
+    ```css
+    body {
+    	margin: 0;
+    	background-color: #000000;
+    	color: #ffffff;
+    	font-family: Monospace;
+    	font-size: 16px;
+    	line-height: 24px;
+    	overscroll-behavior: none;
+    }
     
+    canvas {
+    	display: block;
+    }
+    ```
+- Arquivo `index.html`
+    ```html
+    <!DOCTYPE html>
+    <html lang="en">
+      <head>
+    
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+    
+        <title>WebXR</title>
+    
+        <link rel="stylesheet" href="/style.css" />
+    
+        <script type="importmap">
+          {
+            "imports": {
+              "three": "https://cdn.jsdelivr.net/npm/three@v0.149.0/build/three.module.js",
+              "three/addons/": "https://cdn.jsdelivr.net/npm/three@v0.149.0/examples/jsm/"
+            }
+          }
+        </script>
+        
+      </head>
+      <body>
+        
+        <script type="module">
+          import * as THREE from 'three';
+    
+          const container = document.createElement('div');
+    			document.body.appendChild(container);
+    
+        </script>
+    
+      </body>
+    </html>
+    ```
+- **Scene**: container básico para os elementos gráficos
+    ```javascript
+    let scene = new THREE.Scene();
+    ```
+- [Camera](https://threejs.org/docs/#api/en/cameras/PerspectiveCamera): ponto de vista do observador
+    ```javascript
+    let camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 40);
+    scene.add(camera)
+    ```
+- [Renderer](https://threejs.org/docs/#api/en/renderers/WebGLRenderer): exibe a cena utilizando *WebGL* como base
+    ```javascript
+    let renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    container.appendChild(renderer.domElement);
+    ```
+- [Light](https://threejs.org/docs/#api/en/lights/HemisphereLight): fonte de luz posicionada acima da cena
+    ```javascript
+    var light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
+    light.position.set(0.5, 1, 0.25);
+    scene.add(light);
+    ```
+- [Geometry](https://threejs.org/docs/#api/en/geometries/IcosahedronGeometry): forma geométrica
+    - Outras formas podem ser consutadas [aqui](https://github.com/mrdoob/three.js/tree/master/src/geometries)
+    ```javascript    
+    const geometry = new THREE.IcosahedronGeometry(0.2, 1);
+    ```
+- [Material](https://threejs.org/docs/#api/en/materials/MeshPhongMaterial): tipo de material utilizado na superfície
+    ```javascript
+    const material = new THREE.MeshPhongMaterial({
+      color      :  new THREE.Color("rgb(226,35,213)"),
+      shininess  :  6,
+      transparent: 1,
+      opacity    : 0.8
+    });
+    ```
+- [Mesh](https://threejs.org/docs/#api/en/objects/Mesh): representa figuras compostas de poígonos triangulares (juntando *geometry* e *material*)
+    ```javascript
+    let mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(0, 0, -0.5);
+    scene.add(mesh);
+    
+    renderer.setAnimationLoop(() => {
+      renderer.render(scene, camera);
+    });
+    ```
+- Finalmente, criar o *loop* principal da animação
+    ```javascript
+    renderer.setAnimationLoop(() => {
+      renderer.render(scene, camera);
+    });
+    ```
+- [BoxGeometry](https://threejs.org/docs/#api/en/geometries/BoxGeometry)
+    ```javascript
+    const boxGeom = new THREE.BoxGeometry(0.3, 0.3, 0.3);
+    const boxMaterial = new THREE.MeshBasicMaterial({color: 0xe0676767});
+    const boxMesh = new THREE.Mesh(boxGeom, boxMaterial);
+    scene.add(boxMesh);
+    boxMesh.position.z = -1;
+    boxMesh.position.y = 0.5;
+    ```
+- Convertendo para **AR / WebXR**
+    - Importar o *ARButton*
+    ```javascript
+    import { ARButton } from 'three/addons/webxr/ARButton.js';
+    ```
+    - Habilitar o *xr* eaAdicionar o botão
+    ```javascript
+    renderer.xr.enabled = true;
+    const button = ARButton.createButton(renderer);
+    document.body.appendChild(button);
+    ```
