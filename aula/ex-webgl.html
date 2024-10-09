@@ -31,7 +31,7 @@
         // Definir os dados do triângulo
         const vertices = new Float32Array([
             0.0, 1.0, 0.0, // Topo
-            -1.0, -1.0, 0.0, // Esquerda
+            -0.5, -1.0, 0.0, // Esquerda
             1.0, -1.0, 0.0  // Direita
         ]);
 
@@ -51,7 +51,7 @@
         // Criar o código de shader de fragmento
         const fragmentShaderSource = `
             void main(void) {
-                gl_FragColor = vec4(0.0, 0.8, 1.0, 1.0); // Cor azul
+                gl_FragColor = vec4(0.0, 0.1, 1.0, 1.0); // Cor azul
             }
         `;
 

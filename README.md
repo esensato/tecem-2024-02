@@ -1443,7 +1443,10 @@ Gere um json no formato OpenAPI para o endpoint https://sistema-universitario.gl
 ## Realidade Mista
 - Instalar (iOS) o **XR Viewr** (Android não precisa!)
 - Abrir site `threejs.org` e buscar pelo exemplo (abrir em nova tab) `ar - cones`
-- Para instalar no *desktop* via **Chrome** pesquisar por `webxr emulator chrome extension` e habilitar via **Ferramentas do Desenvolvedor**
+- Para instalar no *desktop* via **Chrome** 
+    - Pesquisar no **Google** por `webxr emulator chrome extension`
+    - Habilitar via **Ferramentas do Desenvolvedor** (selecionar **Samsumg Galaxy S8+ (AR)**)
+    - Atualizar a página
 - Criar um projeto no [glitch](https://glitch.com/edit/#!/remix/glitch-blank-node)
 - Preparação para o projeto:
 - Arquivo `style.css`
