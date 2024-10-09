@@ -1447,7 +1447,7 @@ Gere um json no formato OpenAPI para o endpoint https://sistema-universitario.gl
     - Pesquisar no **Google** por `webxr emulator chrome extension`
     - Habilitar via **Ferramentas do Desenvolvedor** (selecionar **Samsumg Galaxy S8+ (AR)**)
     - Atualizar a página
-- Criar um projeto no [glitch](https://glitch.com/edit/#!/remix/glitch-blank-node)
+- Criar um projeto no [glitch](https://glitch.com/edit/#!/remix/glitch-hello-website)
 - Preparação para o projeto:
 - Arquivo `style.css`
     ```css
