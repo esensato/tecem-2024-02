@@ -1448,7 +1448,7 @@ Gere um json no formato OpenAPI para o endpoint https://sistema-universitario.gl
     - Habilitar via **Ferramentas do Desenvolvedor** (selecionar **Samsumg Galaxy S8+ (AR)**)
     - Atualizar a página
 - Criar um projeto no [glitch](https://glitch.com/edit/#!/remix/glitch-hello-website)
-    - Projeto [já existente](https://glitch.com/embed/#!/esensato-webxr)
+    - Projeto [já existente](https://glitch.com/embed/#!/esensato-webxr-demo)
 - Preparação para o projeto:
 - Arquivo `style.css`
     ```css
