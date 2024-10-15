@@ -1438,7 +1438,7 @@ Gere um json no formato OpenAPI para o endpoint https://sistema-universitario.gl
         }
         client.stop();
     }
-    ```
+    ```        
 ***
 ## Realidade Mista
 - Instalar (iOS) o **XR Viewr** (Android não precisa!)
@@ -1448,6 +1448,7 @@ Gere um json no formato OpenAPI para o endpoint https://sistema-universitario.gl
     - Habilitar via **Ferramentas do Desenvolvedor** (selecionar **Samsumg Galaxy S8+ (AR)**)
     - Atualizar a página
 - Criar um projeto no [glitch](https://glitch.com/edit/#!/remix/glitch-hello-website)
+    - Projeto [já existente](https://glitch.com/embed/#!/esensato-webxr)
 - Preparação para o projeto:
 - Arquivo `style.css`
     ```css
@@ -1563,6 +1564,52 @@ Gere um json no formato OpenAPI para o endpoint https://sistema-universitario.gl
     boxMesh.position.z = -1;
     boxMesh.position.y = 0.5;
     ```
+- [Torus](https://threejs.org/docs/index.html#api/en/geometries/TorusGeometry)
+    ```javascript
+    const torusGeom = new THREE.TorusGeometry( 0.15, 0.05, 12, 50 ); 
+    const torusMaterial = new THREE.MeshBasicMaterial( { color: 0xffff00 } ); 
+    const torusMesh = new THREE.Mesh( torusGeom, torusMaterial ); 
+    torusMesh.position.set(0.0, 0.0, -1);
+    scene.add(torusMesh);
+    ```
+- Posicionamento (x,y,z): x esquerda / direita, y cima / baixo e z profundidade (distância da câmera)
+- [Cone](https://threejs.org/docs/index.html#api/en/geometries/ConeGeometry)
+  ```javascript
+  const coneGeom = new THREE.ConeGeometry( 0.2, 0.3, 32 ); 
+  const coneMaterial = new THREE.MeshBasicMaterial( {color: 0xffff00} );
+  const coneMesh = new THREE.Mesh(coneGeom, coneMaterial ); 
+  coneMesh.position.set(0.0, 0.3, -1);
+  scene.add( coneMesh );
+  ```
+- [Texto](https://threejs.org/docs/index.html#examples/en/geometries/TextGeometry)
+    - Importar o `FontLoader`
+    - Alguns exemplos de fontes podem ser obtidos [aqui](https://cdn.jsdelivr.net/npm/three@0.149.0/examples/fonts/)
+    ```javascript
+    import { FontLoader } from 'three/addons/loaders/FontLoader.js';
+    import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
+    
+    const loader = new FontLoader();
+    loader.load( 'https://cdn.jsdelivr.net/npm/three@0.149.0/examples/fonts/optimer_bold.typeface.json', function ( font ) {
+        let textGeom = new TextGeometry( "WebXR", {
+          font: font,
+          size: 10,
+          depth: 20,
+          hover: 30,
+          curveSegments: 12,
+          bevelEnabled: true,
+          bevelThickness: 10,
+          bevelSize: 8,
+          bevelOffset: 0,
+          bevelSegments: 5
+    } );
+      
+    const textMaterial = new THREE.MeshBasicMaterial( {color: 0xffff00} );
+    const textMesh = new THREE.Mesh(textGeom, textMaterial ); 
+    textMesh.position.set(0, 0.0, -100.0);
+    scene.add( textMesh );
+
+    } );
+    ```
 - Convertendo para **AR / WebXR**
     - Importar o *ARButton*
     ```javascript
@@ -1574,3 +1621,160 @@ Gere um json no formato OpenAPI para o endpoint https://sistema-universitario.gl
     const button = ARButton.createButton(renderer);
     document.body.appendChild(button);
     ```
+- Modelagem **3D**
+    - Modelos prontos do (Khronos Group)[https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models]
+    - Tipos de loades para modelos 3D podem ser obtidos (aqui)[https://cdn.jsdelivr.net/npm/three@0.149.0/examples/jsm/loaders/]
+    - 
+    - Importar o *GLTFLoader*
+    ```javascript
+      import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+```javascript
+      const gltfLoader = new GLTFLoader();
+            gltfLoader.load( 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/refs/heads/main/Models/Duck/glTF-Embedded/Duck.gltf', 
+                        function ( gltf ) {
+                gltf.scene.position.x = 0.0;
+                gltf.scene.position.y = 0.0;
+                gltf.scene.position.z = -3.0;
+                  scene.add(gltf.scene);
+            },
+                        function (progress){
+                                      console.log('Carregando modelo...');
+
+            },
+                        function (err){
+                        console.log('Erro', err);
+            } );
+```
+- Definir o modelo com o (sketchup)[https://app.sketchup.com/app]
+- Salvar modelo como
+
+https://www.khronos.org/gltf/
+
+https://github.com/immersive-web/webxr-samples/tree/main/media/gltf
+
+- Animações podem ser adicionadas sobre os modelos
+    ```javascript
+    renderer.setAnimationLoop(() => {
+      boxMesh.rotation.y = boxMesh.rotation.y + 0.01; // radiano
+      renderer.render(scene, camera);
+    });
+    ```
+- Hit test - possibilidade de posicionar objetos sobre suberfícies reais
+- Criar um marcador para identificar a área de oposicionamento do objeto
+  - Remover o `.rotateX( -Math.PI / 2);` para visualizar o objeto **Ring**
+```javascript
+const geometryRing = new THREE.RingGeometry(0.15, 0.2, 32).rotateX( -Math.PI / 2);
+const materialRing = new THREE.MeshBasicMaterial();
+
+let reticleMesh = new THREE.Mesh(geometryRing, materialRing);
+
+//reticleMesh.matrixAutoUpdate = false;
+//reticleMesh.visible = true;
+reticleMesh.position.set(1.0, 0.0, -1.0);
+scene.add(reticleMesh);
+```
+  - Adocionar o **hit text** como uma *feature*
+    ```javascript
+    const button = ARButton.createButton(renderer, {
+      requiredFeatures: ["hit-test"]
+    });
+    ```
+- Alterar a função `setAnimationLoop`
+```javascript
+let hitTestSource = null;
+let localSpace = null;
+let hitTestSourceInitialized = false;
+
+renderer.setAnimationLoop((timestamp, frame) => {
+    if (frame) {
+    // 1. create a hit test source once and keep it for all the frames
+    // this gets called only once
+    if (!hitTestSourceInitialized) {
+      initializeHitTestSource();
+    }
+
+    // 2. get hit test results
+    if (hitTestSourceInitialized) {
+      // we get the hit test results for a particular frame
+      const hitTestResults = frame.getHitTestResults(hitTestSource);
+
+      // XRHitTestResults The hit test may find multiple surfaces. The first one in the array is the one closest to the camera.
+      if (hitTestResults.length > 0) {
+        const hit = hitTestResults[0];
+        // Get a pose from the hit test result. The pose represents the pose of a point on a surface.
+        const pose = hit.getPose(localSpace);
+
+        reticleMesh.visible = true;
+        // Transform/move the reticle image to the hit test position
+        reticleMesh.matrix.fromArray(pose.transform.matrix);
+      } else {
+        reticleMesh.visible = false;
+      }
+    }
+
+    renderer.render(scene, camera);
+  }
+});
+```
+  - Criar a função `initializeHitTestSource`
+  ```javascript
+      async function initializeHitTestSource() {
+        const session = renderer.xr.getSession();
+
+        const viewerSpace = await session.requestReferenceSpace("viewer");
+        hitTestSource = await session.requestHitTestSource({
+          space: viewerSpace,
+        });
+        localSpace = await session.requestReferenceSpace("local");
+        hitTestSourceInitialized = true;
+
+        session.addEventListener("end", () => {
+          hitTestSourceInitialized = false;
+          hitTestSource = null;
+        });
+      }
+    ```
+    - Implementar o `onSelect`
+    ```javascript
+      function onSelect() {        
+        if (reticle.visible) {
+          const geometry = new THREE.CylinderGeometry(0, 0.05, 0.2, 32);
+          const material = new THREE.MeshPhongMaterial({
+            color: 0xffffff * Math.random()
+          });
+          const mesh = new THREE.Mesh(geometry, material);
+          
+          mesh.position.setFromMatrixPosition(reticle.matrix);
+          mesh.quaternion.setFromRotationMatrix(reticle.matrix);
+
+          scene.add(mesh); 
+        }
+      }
+    ```
+- Verificar se um objeto da cena foi clicado
+```javascript
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+function onMouseClick(event) {
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+    // Atualizar o Raycaster com a câmera e a posição do mouse
+    raycaster.setFromCamera(mouse, camera);
+
+    // Obter os objetos que foram intersectados pelo raio
+    const intersects = raycaster.intersectObjects(scene.children, true);
+
+    if (intersects.length > 0) {
+        // Se houve intersecção, podemos acessar o primeiro objeto clicado
+        const clickedObject = intersects[0].object;
+        console.log("Objeto clicado: ", clickedObject.name);
+        
+        // Adicionar ou modificar ações no objeto clicado
+        clickedObject.material.color.set(0xff0000); // Mudar a cor do objeto como exemplo
+    }
+}
+
+window.addEventListener('click', onMouseClick, false);
+```
