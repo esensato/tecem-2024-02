@@ -1610,6 +1610,12 @@ Gere um json no formato OpenAPI para o endpoint https://sistema-universitario.gl
 
     } );
     ```
+- Para alterar o valor do texto exibido deve-se remover o objeto e adicioná-lo novamente
+    ```javascript
+    scene.remove(textMesh);
+    textMesh.geometry.dispose();
+    textMesh.material.dispose();
+    ```
 - Convertendo para **AR / WebXR**
     - Importar o *ARButton*
     ```javascript
