@@ -1441,7 +1441,7 @@ Gere um json no formato OpenAPI para o endpoint https://sistema-universitario.gl
     ```        
 ***
 ## Realidade Mista
-- Instalar (iOS) o **XR Viewr** (Android não precisa!)
+- Instalar (iOS) o **WebXR Viewr** (Android não precisa!)
 - Abrir site `threejs.org` e buscar pelo exemplo (abrir em nova tab) `ar - cones`
 - Para instalar no *desktop* via **Chrome** 
     - Pesquisar no **Google** por `webxr emulator chrome extension`
