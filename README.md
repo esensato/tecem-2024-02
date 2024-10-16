@@ -1659,7 +1659,7 @@ Gere um json no formato OpenAPI para o endpoint https://sistema-universitario.gl
   ```
 - Hit test - possibilidade de posicionar objetos sobre suberfícies reais
 - Criar um marcador para identificar a área de oposicionamento do objeto
-  - Remover o `.rotateX( -Math.PI / 2);` para visualizar o objeto **Ring**
+- Remover o `.rotateX( -Math.PI / 2);` para visualizar o objeto **Ring**
 ```javascript
 const geometryRing = new THREE.RingGeometry(0.15, 0.2, 32).rotateX( -Math.PI / 2);
 const materialRing = new THREE.MeshBasicMaterial();
@@ -1671,12 +1671,12 @@ let reticleMesh = new THREE.Mesh(geometryRing, materialRing);
 reticleMesh.position.set(1.0, 0.0, -1.0);
 scene.add(reticleMesh);
 ```
-  - Adocionar o **hit text** como uma *feature*
-    ```javascript
-    const button = ARButton.createButton(renderer, {
-      requiredFeatures: ["hit-test"]
-    });
-    ```
+- Adicionar o **hit text** como uma *feature*
+```javascript
+const button = ARButton.createButton(renderer, {
+  requiredFeatures: ["hit-test"]
+});
+```
 - Alterar a função `setAnimationLoop`
 ```javascript
 let hitTestSource = null;
@@ -1714,41 +1714,41 @@ renderer.setAnimationLoop((timestamp, frame) => {
   }
 });
 ```
-  - Criar a função `initializeHitTestSource`
-  ```javascript
-  async function initializeHitTestSource() {
-    const session = renderer.xr.getSession();
+- Criar a função `initializeHitTestSource`
+```javascript
+async function initializeHitTestSource() {
+  const session = renderer.xr.getSession();
 
-    const viewerSpace = await session.requestReferenceSpace("viewer");
-    hitTestSource = await session.requestHitTestSource({
-      space: viewerSpace,
+  const viewerSpace = await session.requestReferenceSpace("viewer");
+  hitTestSource = await session.requestHitTestSource({
+    space: viewerSpace,
+  });
+  localSpace = await session.requestReferenceSpace("local");
+  hitTestSourceInitialized = true;
+
+  session.addEventListener("end", () => {
+    hitTestSourceInitialized = false;
+    hitTestSource = null;
+  });
+}
+```
+- Implementar o `onSelect`
+```javascript
+function onSelect() {        
+  if (reticle.visible) {
+    const geometry = new THREE.CylinderGeometry(0, 0.05, 0.2, 32);
+    const material = new THREE.MeshPhongMaterial({
+      color: 0xffffff * Math.random()
     });
-    localSpace = await session.requestReferenceSpace("local");
-    hitTestSourceInitialized = true;
+    const mesh = new THREE.Mesh(geometry, material);
+    
+    mesh.position.setFromMatrixPosition(reticle.matrix);
+    mesh.quaternion.setFromRotationMatrix(reticle.matrix);
 
-    session.addEventListener("end", () => {
-      hitTestSourceInitialized = false;
-      hitTestSource = null;
-    });
+    scene.add(mesh); 
   }
-  ```
-  - Implementar o `onSelect`
-  ```javascript
-  function onSelect() {        
-    if (reticle.visible) {
-      const geometry = new THREE.CylinderGeometry(0, 0.05, 0.2, 32);
-      const material = new THREE.MeshPhongMaterial({
-        color: 0xffffff * Math.random()
-      });
-      const mesh = new THREE.Mesh(geometry, material);
-      
-      mesh.position.setFromMatrixPosition(reticle.matrix);
-      mesh.quaternion.setFromRotationMatrix(reticle.matrix);
-
-      scene.add(mesh); 
-    }
-  }
-  ```
+}
+```
 - Verificar se um objeto da cena foi clicado
 ```javascript
 const raycaster = new THREE.Raycaster();
