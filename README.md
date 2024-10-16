@@ -1628,8 +1628,8 @@ Gere um json no formato OpenAPI para o endpoint https://sistema-universitario.gl
     document.body.appendChild(button);
     ```
 - Modelagem **3D**
-    - Modelos prontos do (Khronos Group)[https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models]
-    - Tipos de loades para modelos 3D podem ser obtidos (aqui)[https://cdn.jsdelivr.net/npm/three@0.149.0/examples/jsm/loaders/]
+    - Modelos prontos do [Khronos Group](https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models)
+    - Tipos de loades para modelos 3D podem ser obtidos [aqui](https://cdn.jsdelivr.net/npm/three@0.149.0/examples/jsm/loaders/)
     - 
     - Importar o *GLTFLoader*
     ```javascript
