@@ -1628,9 +1628,8 @@ Gere um json no formato OpenAPI para o endpoint https://sistema-universitario.gl
     document.body.appendChild(button);
     ```
 - Modelagem **3D**
-    - Modelos prontos do [Khronos Group](https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models)
+    - Modelos prontos do [Khronos Group](https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models) ou [aqui](https://github.com/immersive-web/webxr-samples/tree/main/media/gltf)
     - Tipos de loades para modelos 3D podem ser obtidos [aqui](https://cdn.jsdelivr.net/npm/three@0.149.0/examples/jsm/loaders/)
-    - 
     - Importar o *GLTFLoader*
     ```javascript
       import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -1651,20 +1650,13 @@ Gere um json no formato OpenAPI para o endpoint https://sistema-universitario.gl
                         console.log('Erro', err);
             } );
 ```
-- Definir o modelo com o (sketchup)[https://app.sketchup.com/app]
-- Salvar modelo como
-
-https://www.khronos.org/gltf/
-
-https://github.com/immersive-web/webxr-samples/tree/main/media/gltf
-
 - Animações podem ser adicionadas sobre os modelos
-    ```javascript
-    renderer.setAnimationLoop(() => {
-      boxMesh.rotation.y = boxMesh.rotation.y + 0.01; // radiano
-      renderer.render(scene, camera);
-    });
-    ```
+  ```javascript
+  renderer.setAnimationLoop(() => {
+    boxMesh.rotation.y = boxMesh.rotation.y + 0.01; // radiano
+    renderer.render(scene, camera);
+  });
+  ```
 - Hit test - possibilidade de posicionar objetos sobre suberfícies reais
 - Criar um marcador para identificar a área de oposicionamento do objeto
   - Remover o `.rotateX( -Math.PI / 2);` para visualizar o objeto **Ring**
@@ -1724,39 +1716,39 @@ renderer.setAnimationLoop((timestamp, frame) => {
 ```
   - Criar a função `initializeHitTestSource`
   ```javascript
-      async function initializeHitTestSource() {
-        const session = renderer.xr.getSession();
+  async function initializeHitTestSource() {
+    const session = renderer.xr.getSession();
 
-        const viewerSpace = await session.requestReferenceSpace("viewer");
-        hitTestSource = await session.requestHitTestSource({
-          space: viewerSpace,
-        });
-        localSpace = await session.requestReferenceSpace("local");
-        hitTestSourceInitialized = true;
+    const viewerSpace = await session.requestReferenceSpace("viewer");
+    hitTestSource = await session.requestHitTestSource({
+      space: viewerSpace,
+    });
+    localSpace = await session.requestReferenceSpace("local");
+    hitTestSourceInitialized = true;
 
-        session.addEventListener("end", () => {
-          hitTestSourceInitialized = false;
-          hitTestSource = null;
-        });
-      }
-    ```
-    - Implementar o `onSelect`
-    ```javascript
-      function onSelect() {        
-        if (reticle.visible) {
-          const geometry = new THREE.CylinderGeometry(0, 0.05, 0.2, 32);
-          const material = new THREE.MeshPhongMaterial({
-            color: 0xffffff * Math.random()
-          });
-          const mesh = new THREE.Mesh(geometry, material);
-          
-          mesh.position.setFromMatrixPosition(reticle.matrix);
-          mesh.quaternion.setFromRotationMatrix(reticle.matrix);
+    session.addEventListener("end", () => {
+      hitTestSourceInitialized = false;
+      hitTestSource = null;
+    });
+  }
+  ```
+  - Implementar o `onSelect`
+  ```javascript
+  function onSelect() {        
+    if (reticle.visible) {
+      const geometry = new THREE.CylinderGeometry(0, 0.05, 0.2, 32);
+      const material = new THREE.MeshPhongMaterial({
+        color: 0xffffff * Math.random()
+      });
+      const mesh = new THREE.Mesh(geometry, material);
+      
+      mesh.position.setFromMatrixPosition(reticle.matrix);
+      mesh.quaternion.setFromRotationMatrix(reticle.matrix);
 
-          scene.add(mesh); 
-        }
-      }
-    ```
+      scene.add(mesh); 
+    }
+  }
+  ```
 - Verificar se um objeto da cena foi clicado
 ```javascript
 const raycaster = new THREE.Raycaster();
