@@ -1776,3 +1776,110 @@ function onMouseClick(event) {
 
 window.addEventListener('click', onMouseClick, false);
 ```
+***
+## Blockchain
+- Criar uma carteira virtual no [Metamax](https://metamask.io/download/)
+- Conversos para [Mnemonic Bip39](https://iancoleman.io/bip39/)
+- Tempo de processamento de blocos pode ser consultado em [block time](https://etherscan.io/chart/blocktime)
+- Ambiente de desenvolvimento [Ethereum Remix](https://remix.ethereum.org/)
+```javascript
+// SPDX-License-Identifier: GPL-3.0
+pragma solidity >=0.8.2 <0.9.0;
+
+contract Transferencia {
+    
+        string public nomeorigem;
+        string public nomedestino;
+        int public valor;
+
+        constructor (string memory novonomeorigem, string memory novonomedstino, int novovalor) {
+            nomeorigem = novonomeorigem;
+            nomedestino = novonomedstino;
+            valor = novovalor;
+        }
+        
+        function setNomeOrigem(string memory novonomeorigem) public {
+
+            nomeorigem = novonomeorigem;
+        }
+
+
+}
+```
+- Atributos `public` são apenas de leitura
+- Necessário criar os métodos `set` para atribuir valor
+```javascript
+function setNomeOrigem(string memory novonomeorigem) public {
+
+    nomeorigem = novonomeorigem;
+
+}
+
+```
+- Tipos de função:
+    - `public` - qualquer um pode acessar
+    - `private` - restrita ao contrato (interna)
+    - `view` - apenas retorna dados e não altera o conteúdo das variáveis de estado
+    - `constant` - mesma coisa do que `view`
+    - `pure` - nem altera e nem retorna o conteúdo das variáveis de estado
+    - `payable` - explicitamente envia *ethers* quando acionada
+- Exemplo:
+```javascript
+function teste() public pure returns (int){
+    return 1 + 1;
+}
+```
+- Criar também um método construtor
+```javascript
+constructor (string memory novonomeorigem, string memory novonomedstino, int novovalor) {
+
+    nomeorigem = novonomeorigem;
+    nomedestino = novonomedstino;
+    valor = novovalor;
+
+}
+```
+#### Projeto Local
+- Instalar o compilador *solidity* `npm install -g solc`
+- Para compilar o contrato `solcjs --bin --abi --include-path node_modules/ --base-path . Transferencia.sol`
+- Instalar as dependências `npm install --save ganache web3`
+- [Ganache](https://www.npmjs.com/package/ganache) é uma ferramenta para criar blockchains locais para desenvolvimento em **Ethereum**
+- Obter contas
+```javascript
+const ganache = require('ganache');
+const { Web3 } = require('web3');
+const web3 = new Web3(ganache.provider());
+
+web3.eth.getAccounts().then((fetchedAccounts) => {
+    console.log(fetchedAccounts);
+});
+```
+- Teste final
+
+```javascript
+const assert = require('assert');
+const ganache = require('ganache');
+const { Web3 } = require('web3');
+const web3 = new Web3(ganache.provider());
+const { interface, bytecode } = require("../compile");
+
+let accounts;
+let inbox;
+
+accounts = await web3.eth.getAccounts();
+inbox = await new web3.eth.Contract(JSON.parse(interface))
+  .deploy({
+    data: bytecode,
+    arguments: ["Hi there!"],
+  }).send({ from: accounts[0], gas: "1000000" });
+
+  console.log(inbox.options.address);
+
+  const message = await inbox.methods.message().call();
+  console.log(message);
+
+  await inbox.methods.setMessage("bye").send({ from: accounts[0] });
+  const message = await inbox.methods.message().call();
+  console.log(message);
+```
+
