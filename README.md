@@ -1563,6 +1563,7 @@ Gere um json no formato OpenAPI para o endpoint https://sistema-universitario.gl
     scene.add(boxMesh);
     boxMesh.position.z = -1;
     boxMesh.position.y = 0.5;
+    boxMesh.name = 'Cubo';
     ```
 - [Torus](https://threejs.org/docs/index.html#api/en/geometries/TorusGeometry)
     ```javascript
@@ -1779,7 +1780,7 @@ window.addEventListener('click', onMouseClick, false);
 ***
 ## Blockchain
 - Criar uma carteira virtual no [Metamax](https://metamask.io/download/)
-- Conversos para [Mnemonic Bip39](https://iancoleman.io/bip39/)
+- Conversor para [Mnemonic Bip39](https://iancoleman.io/bip39/)
 - Tempo de processamento de blocos pode ser consultado em [block time](https://etherscan.io/chart/blocktime)
 - Ambiente de desenvolvimento [Ethereum Remix](https://remix.ethereum.org/)
 ```javascript
@@ -1793,17 +1794,18 @@ contract Transferencia {
         int public valor;
 
         constructor (string memory novonomeorigem, string memory novonomedstino, int novovalor) {
+
             nomeorigem = novonomeorigem;
             nomedestino = novonomedstino;
             valor = novovalor;
+
         }
         
         function setNomeOrigem(string memory novonomeorigem) public {
 
             nomeorigem = novonomeorigem;
+
         }
-
-
 }
 ```
 - Atributos `public` são apenas de leitura
@@ -1840,46 +1842,254 @@ constructor (string memory novonomeorigem, string memory novonomedstino, int nov
 }
 ```
 #### Projeto Local
-- Instalar o compilador *solidity* `npm install -g solc`
-- Para compilar o contrato `solcjs --bin --abi --include-path node_modules/ --base-path . Transferencia.sol`
-- Instalar as dependências `npm install --save ganache web3`
-- [Ganache](https://www.npmjs.com/package/ganache) é uma ferramenta para criar blockchains locais para desenvolvimento em **Ethereum**
-- Obter contas
-```javascript
-const ganache = require('ganache');
-const { Web3 } = require('web3');
-const web3 = new Web3(ganache.provider());
+- Instalar as dependências `npm install -g solc web3 truffle ganache`
+    - `solc`: compilador *solidity*
+    - `web3`: framework para desenvolvimento de aplicações *blockchain*
+    - `truffle`: framework para criação de aplicações *blockchain*
+    - [Ganache](https://www.npmjs.com/package/ganache): servidor local para testes (uma versão GUI do ganache pode ser obtida [aqui](https://archive.trufflesuite.com/ganache/))
+- Criar uma pasta para conter o projeto, por exemplo, `blockchain-transferencia`
+- Iniciar o projeto dentro do diretório `blockchain-transferencia` com o comando `truffle init`
+- Editar o arquivo `truffle-config.js` e no objeto `network` colar o código abaixo
+```json
+networks: {
 
-web3.eth.getAccounts().then((fetchedAccounts) => {
-    console.log(fetchedAccounts);
+    development: {
+     host: "127.0.0.1",
+     port: 8545,
+     network_id: "*"     
+     }
+},
+compilers: {
+    solc: {
+      version: "0.8.26" ,
+      settings: {          
+       optimizer: {
+         enabled: true,
+          runs: 200
+       }
+
+    }
+  }
+}
+```
+- Criar o contrato na pasta `contracts` com o comando `truffle create contract Transferencia` e incluir o código abaixo
+```javascript
+// SPDX-License-Identifier: GPL-3.0
+pragma solidity >=0.8.2 <0.9.0;
+
+contract Transferencia {
+    
+        string public nomeorigem;
+        string public nomedestino;
+        int public valor;
+
+        constructor (string memory novonomeorigem, string memory novonomedstino, int novovalor) {
+
+            nomeorigem = novonomeorigem;
+            nomedestino = novonomedstino;
+            valor = novovalor;
+
+        }
+        
+        function setNomeOrigem(string memory novonomeorigem) public {
+
+            nomeorigem = novonomeorigem;
+
+        }
+}
+```
+- Para compilar o contrato `truffle compile` que irá gerar a interface *ABI* e também o *bytecode* dentro da pasta `build/contracts`
+- Criar uma migração *deploy* com o comando `truffle create migration Transferencia` e complementar o código
+```javascript
+// indicar o nome do contrato criado na pasta contracts
+const Transferencia = artifacts.require('Transferencia');
+
+module.exports = function (_deployer) {
+  _deployer.deploy(Transferencia, 'Joao', 'Maria', 100);
+};
+```
+- Em um novo terminal, iniciar o servidor local *ganache* com `ganache`
+- Efetuar o deploy com `truffle migrate`
+- Para interagir com o contrato utilizar o `truffle console`
+- Obter a instância do contrato `const instancia = await Transferencia.deployed();`
+- Verificar os valores
+```javascript
+const nomeOrigem = await instancia.nomeorigem();
+console.log("Nome de origem:", nomeOrigem);
+
+const nomeDestino = await instancia.nomedestino();
+console.log("Nome de destino:", nomeDestino);
+
+const valorTransferencia = await instancia.valor();
+console.log("Valor da transferência:", valorTransferencia.toString());
+```
+- Outras opções interessantes
+```javascript
+// Endereço do contrato
+console.log("Endereço do contrato:", instancia.address);
+
+// Verificar o endereço da conta que fez o deploy
+const deployer = (await web3.eth.getAccounts())[0];
+console.log("Deployer:", deployer);
+
+// Obter saldo da conta deployer
+const saldo = await web3.eth.getBalance(deployer);
+console.log("Saldo do deployer:", web3.utils.fromWei(saldo, 'ether'), "ETH");
+
+// verificar o ultimo bloco
+const latestBlock = await web3.eth.getBlock('latest');
+console.log(latestBlock);
+
+// verificar o bloco anterior
+const previousBlock = await web3.eth.getBlock(latestBlock.number - 1);
+console.log(previousBlock);
+```
+- Para sair do console digitar o comando `.exit`
+- Um exemplo utilizando o *web3*
+```javascript
+const { Web3 } = require('web3');
+
+const provider = new Web3.providers.HttpProvider('http://localhost:8545');
+const web3 = new Web3(provider)
+
+async function getPreviousBlock() {
+    const latestBlock = await web3.eth.getBlock('latest');
+    console.log('Bloco atual:', latestBlock);
+
+    const previousBlock = await web3.eth.getBlock(latestBlock.number - 1);
+    console.log('Bloco anterior:', previousBlock);
+}
+
+getPreviousBlock().catch(console.error);
+```
+- Observação: existe mais de um tipo de [provider](https://docs.web3js.org/guides/web3_providers_guide/)
+#### App Web Com Express
+- Criar uma pasta com o nome `blockchain-transferencia-express`
+- Iniciar o projeto *nodejs* com `npm init -y`
+- Instalar as dependências `npm install --save express web3`
+- Criar o *backend* da aplicação
+```javascript
+const express = require('express');
+const { Web3 } = require('web3');
+const { abi, bytecode } = require('./Transferencia.json')
+
+const app = express();
+const port = 3000;
+
+// Configuração do Web3 com o Ganache (ou endereço RPC)
+const provider = new Web3.providers.HttpProvider('http://localhost:8545');
+const web3 = new Web3(provider)
+// Carregar ABI e endereço do contrato
+const contratoEndereco = '0xb11f281d7d4dba784cf2eedd56df2d7d3826ab7f'; // Substitua pelo endereço do contrato implantado
+
+const contrato = new web3.eth.Contract(abi, contratoEndereco);
+
+// Rota para obter os dados do contrato
+app.get('/dados', async (req, res) => {
+    try {
+        const nomeOrigem = await contrato.methods.nomeorigem().call();
+        const nomeDestino = await contrato.methods.nomedestino().call();
+        const valor = await contrato.methods.valor().call().toString();
+        res.json({ nomeOrigem, nomeDestino, valor });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Rota para atualizar os dados do contrato
+app.post('/atualizar', express.json(), async (req, res) => {
+    const { nomeOrigem, nomeDestino, valor } = req.body;
+    const accounts = await web3.eth.getAccounts();
+
+    try {
+        await contrato.methods.atualizarTransferencia(nomeOrigem, nomeDestino, valor)
+            .send({ from: accounts[0], gas: 500000 });
+        res.json({ message: 'Contrato atualizado com sucesso!' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.listen(port, () => {
+    console.log(`Servidor rodando em http://localhost:${port}`);
 });
 ```
-- Teste final
+- Um simples *frontend* pode ser criado para interagir com o *backend* acima
+    - Criar uma pasta `public` dentro da pasta do projeto
+    - No `server.js` adicionar
+    ```javascript
+    const path = require('path');
+    app.use(express.static(path.join(__dirname, 'public')));
+    ```
+- Incluir o código abaixo `index.html` na pasta `public`
+```html
+<!DOCTYPE html>
+<html>
 
-```javascript
-const assert = require('assert');
-const ganache = require('ganache');
-const { Web3 } = require('web3');
-const web3 = new Web3(ganache.provider());
-const { interface, bytecode } = require("../compile");
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu Projeto</title>
+    <link rel="stylesheet" href="style.css">
+    <script>
+        async function carregarDados() {
+            try {
+                const response = await fetch('/dados');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const dados = await response.json();
+                document.getElementById('nomeOrigem').textContent = dados.nomeOrigem;
+                document.getElementById('nomeDestino').textContent = dados.nomeDestino;
+                document.getElementById('valor').textContent = dados.valor;
+            } catch (error) {
+                console.error('Houve um problema com a requisição Fetch:', error);
+            }
+        }
 
-let accounts;
-let inbox;
+        // Carregar os dados ao carregar a página
+        window.addEventListener('load', carregarDados);
+    </script>
+</head>
 
-accounts = await web3.eth.getAccounts();
-inbox = await new web3.eth.Contract(JSON.parse(interface))
-  .deploy({
-    data: bytecode,
-    arguments: ["Hi there!"],
-  }).send({ from: accounts[0], gas: "1000000" });
+<body>
+    <h1 id="nomeOrigem"></h1>
+    <p id="nomeDestino"></p>
+    <p id="nomeOrigem"></p>
+</body>
 
-  console.log(inbox.options.address);
-
-  const message = await inbox.methods.message().call();
-  console.log(message);
-
-  await inbox.methods.setMessage("bye").send({ from: accounts[0] });
-  const message = await inbox.methods.message().call();
-  console.log(message);
+</html>
 ```
+- Criar um arquivo de folha de estilos `style.css`
+```css
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    text-align: center;
+    padding: 50px;
+}
 
+h1 {
+    color: #333;
+}
+```
+#### App Web Com Truffle
+- Criar uma pasta `blockchain-transferencia-client-truffle`
+- Dentro da pasta, iniciar o projeto *nodejs* com `npm init -y`
+- Adicionar o servidor, por exemplo, *lite-server* `npm install lite-server --save-dev`
+- Editar o arquivo `package.json` e adicionar o seguinte *script*
+```json
+"scripts": {
+    "start": "lite-server"
+},
+```
+- Criar um arquivo `Transferencia.js` com o conteúdo
+```javascript
+const Transferencia = {
+    "abi": [ /* Cole o ABI gerado aqui */ ],
+    "networks": {
+        "5777": { "address": "ENDERECO_DO_CONTRATO" }
+    }
+};
+export default Transferencia;
+```
