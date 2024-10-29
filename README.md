@@ -1838,6 +1838,7 @@ constructor (string memory novonomeorigem, string memory novonomedstino, int nov
 
 }
 ```
+- Os principais tipos de dados do *solidity* podem ser acessados [aqui](https://docs.soliditylang.org/en/latest/types.html)
 #### Projeto Local
 - Instalar as dependências `npm install -g solc web3 truffle ganache`
     - `solc`: compilador *solidity*
