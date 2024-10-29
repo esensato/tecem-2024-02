@@ -1779,9 +1779,6 @@ window.addEventListener('click', onMouseClick, false);
 ```
 ***
 ## Blockchain
-- Criar uma carteira virtual no [Metamax](https://metamask.io/download/)
-- Conversor para [Mnemonic Bip39](https://iancoleman.io/bip39/)
-- Tempo de processamento de blocos pode ser consultado em [block time](https://etherscan.io/chart/blocktime)
 - Ambiente de desenvolvimento [Ethereum Remix](https://remix.ethereum.org/)
 ```javascript
 // SPDX-License-Identifier: GPL-3.0
@@ -2093,3 +2090,6 @@ const Transferencia = {
 };
 export default Transferencia;
 ```
+- Criar uma carteira virtual no [Metamax](https://metamask.io/download/)
+- Conversor para [Mnemonic Bip39](https://iancoleman.io/bip39/)
+- Tempo de processamento de blocos pode ser consultado em [block time](https://etherscan.io/chart/blocktime)
