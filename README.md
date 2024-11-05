@@ -1848,7 +1848,7 @@ constructor (string memory novonomeorigem, string memory novonomedstino, int nov
 - Criar uma pasta para conter o projeto, por exemplo, `blockchain-transferencia`
 - Iniciar o projeto dentro do diretório `blockchain-transferencia` com o comando `truffle init`
 - Editar o arquivo `truffle-config.js` e no objeto `network` colar o código abaixo
-```json
+```javascript
 networks: {
 
     development: {
@@ -1859,21 +1859,14 @@ networks: {
 },
 compilers: {
     solc: {
-      version: "0.8.26" ,
-      settings: {          
-       optimizer: {
-         enabled: true,
-          runs: 200
-       }
-
+      version: "0.8.24"
     }
   }
-}
 ```
 - Criar o contrato na pasta `contracts` com o comando `truffle create contract Transferencia` e incluir o código abaixo
 ```javascript
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.8.2 <0.9.0;
+pragma solidity >=0.8.24;
 
 contract Transferencia {
     
@@ -1941,6 +1934,10 @@ console.log(latestBlock);
 // verificar o bloco anterior
 const previousBlock = await web3.eth.getBlock(latestBlock.number - 1);
 console.log(previousBlock);
+
+// buscar os blocos do contrato pelos logs
+const logs = await web3.eth.getPastLogs({address: '0x3A198349564862C1Dc9DFd367B26930F9d35D0bD'});
+
 ```
 - Para sair do console digitar o comando `.exit`
 - Um exemplo utilizando o *web3*
@@ -1954,7 +1951,7 @@ async function getPreviousBlock() {
     const latestBlock = await web3.eth.getBlock('latest');
     console.log('Bloco atual:', latestBlock);
 
-    const previousBlock = await web3.eth.getBlock(latestBlock.number - 1);
+    const previousBlock = await web3.eth.getBlock(latestBlock.number - BigInt(1));
     console.log('Bloco anterior:', previousBlock);
 }
 
@@ -1969,7 +1966,7 @@ getPreviousBlock().catch(console.error);
 ```javascript
 const express = require('express');
 const { Web3 } = require('web3');
-const { abi, bytecode } = require('./Transferencia.json')
+const { abi, bytecode } = require('./build/contracts/Transferencia.json')
 
 const app = express();
 const port = 3000;
@@ -1978,7 +1975,7 @@ const port = 3000;
 const provider = new Web3.providers.HttpProvider('http://localhost:8545');
 const web3 = new Web3(provider)
 // Carregar ABI e endereço do contrato
-const contratoEndereco = '0xb11f281d7d4dba784cf2eedd56df2d7d3826ab7f'; // Substitua pelo endereço do contrato implantado
+const contratoEndereco = '0x7c20117358280da996b00bf8d33e531d15b2959c'; // Substitua pelo endereço do contrato implantado
 
 const contrato = new web3.eth.Contract(abi, contratoEndereco);
 
@@ -1987,8 +1984,8 @@ app.get('/dados', async (req, res) => {
     try {
         const nomeOrigem = await contrato.methods.nomeorigem().call();
         const nomeDestino = await contrato.methods.nomedestino().call();
-        const valor = await contrato.methods.valor().call().toString();
-        res.json({ nomeOrigem, nomeDestino, valor });
+        const valor = await contrato.methods.valor().call();
+        res.json({ nomeOrigem, nomeDestino, valor: valor.toString()});
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -2053,7 +2050,7 @@ app.listen(port, () => {
 <body>
     <h1 id="nomeOrigem"></h1>
     <p id="nomeDestino"></p>
-    <p id="nomeOrigem"></p>
+    <p id="valor"></p>
 </body>
 
 </html>
@@ -2094,3 +2091,109 @@ export default Transferencia;
 - Criar uma carteira virtual no [Metamax](https://metamask.io/download/)
 - Conversor para [Mnemonic Bip39](https://iancoleman.io/bip39/)
 - Tempo de processamento de blocos pode ser consultado em [block time](https://etherscan.io/chart/blocktime)
+***
+## Auto Machine Learning (AML)
+- Acessar o [Google Colab](https://colab.research.google.com) e criar um novo *Notebook*
+- Importar os pacotes necessários
+```javascript
+!pip install h2o
+!pip install tpot
+!pip install scikit-learn
+!pip install ucimlrepo
+!pip install pandas
+```
+- Os pacotes [scikit-learn](https://scikit-learn.org/stable/) e [ucimlrepo]((https://archive.ics.uci.edu/)) são *datasets* utilizados em exemplos
+- Para listar todos os *datasets* do pacote **scikit-learn**
+```py
+import sklearn.datasets as datasets_sklearn
+available_datasets = [func for func in dir(datasets_sklearn) if func.startswith('load_') or func.startswith('fetch_')]
+print(available_datasets)
+```
+- Listando todos os *datasets* do pacote **ucimlrepo** 
+```py
+from ucimlrepo import fetch_ucirepo, list_available_datasets
+list_available_datasets()
+```
+- Por exemplo, podemos utilizar um *dataset* para classificação de flores de Iris (um tipo de flor de cores fortes, parecidas com orquídeas)
+- As flores de Iris podem ser classificadas em Setosa, Versicolour e Virginica conforme a largura e altura de pétalas e sépalas
+- Para carregar o *dataset*
+```py
+from sklearn.datasets import load_iris
+
+iris = load_iris()
+iris.target_names
+iris.target
+iris.feature_names
+iris.data
+```
+- A melhor forma para se trabalhar com esses dados é onvertê-los para *dataframes*
+```py
+df = pd.DataFrame(iris.data, columns=iris.feature_names)
+df['species'] = iris.target
+df.head()
+```
+- Selecionar um subconjunto dos dados para testar o modelo
+```py
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+df_train = pd.DataFrame(X_train, columns=iris.feature_names)
+df_train['species'] = y_train
+
+# Exibir as primeiras 5 linhas dos dados de treino
+print("Dados de treino (X_train e y_train):")
+print(df_train.head())
+```
+- Exibir os dados de teste
+```py
+df_test = pd.DataFrame(X_test, columns=iris.feature_names)
+df_test['species'] = y_test
+df_test.head()
+```
+- Visualização gráfica
+```py
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+plt.figure(figsize=(12, 6))
+
+plt.subplot(1, 2, 1)
+sns.countplot(x=y_train)
+plt.title("Distribuição das Classes - Treinamento")
+
+plt.subplot(1, 2, 2)
+sns.countplot(x=y_test)
+plt.title("Distribuição das Classes - Teste")
+
+plt.tight_layout()
+plt.show()
+```
+#### H2O
+- Iniciar o servidor **H2O**
+```py
+import h2o
+h2o.init()
+```
+- Importar a bilbioteca `H2OAutoML`
+```py
+from h2o.automl import H2OAutoML
+from h2o import H2OFrame
+```
+- Converter o *Dataframe* para o formato aceito pelo **H2O** que é o `H2OFrame`
+```py
+train_data = H2OFrame(pd.DataFrame(X_train))
+test_data = H2OFrame(pd.DataFrame(X_test))
+```
+- Realizar a escolha do melhor modelo (Random Forest, Gradient Boosting, Deep Learning, etc.) para o conjunto de dados
+```py
+aml = H2OAutoML(max_models=20, max_runtime_secs=12000)
+aml.train(y=0, training_frame=train_data)
+```
+- Melhores modelos selecionados
+```py
+aml.leaderboard
+```
+- Utilizar o melhor modelo (`leader`) para realizar uma predição
+```py
+predictions = aml.leader.predict(test_data)
+```
+

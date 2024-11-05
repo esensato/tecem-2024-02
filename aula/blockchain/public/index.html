@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu Projeto</title>
+    <link rel="stylesheet" href="style.css">
+    <script>
+        async function carregarDados() {
+            try {
+                const response = await fetch('/dados');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const dados = await response.json();
+                document.getElementById('nomeOrigem').textContent = dados.nomeOrigem;
+                document.getElementById('nomeDestino').textContent = dados.nomeDestino;
+                document.getElementById('valor').textContent = dados.valor;
+            } catch (error) {
+                console.error('Houve um problema com a requisição Fetch:', error);
+            }
+        }
+
+        // Carregar os dados ao carregar a página
+        window.addEventListener('load', carregarDados);
+    </script>
+</head>
+
+<body>
+    <h1 id="nomeOrigem"></h1>
+    <p id="nomeDestino"></p>
+    <p id="valor"></p>
+</body>
+
+</html>
