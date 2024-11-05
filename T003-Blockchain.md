@@ -10,6 +10,7 @@
     - Consultar Certificados: Qualquer usuário poderá consultar um certificado pelo ID para verificar a validade do registro
     - Revogar Certificados: Deve haver uma função para revogar certificados, para que um certificado possa ser invalidado quando necessário.
 - Criar um frontend para cada uma das funcionalidades
+- Utilizar como referência o [Mateiral de Sala](https://github.com/esensato/tecem-2024-02?tab=readme-ov-file#projeto-local)
 
 
 
