@@ -5,6 +5,7 @@
     - Nome do aluno
     - Curso
     - Data de Emissão
+    - Status (valido ou cancelado)
 - As funcionalidades devem ser
     - Registrar Certificados: O contrato deve permitir que a instituição registre novos certificado (contendo ID do certificado, nome do aluno, curso, data de emissão)
     - Consultar Certificados: Qualquer usuário poderá consultar um certificado pelo ID para verificar a validade do registro
