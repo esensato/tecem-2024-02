@@ -2107,7 +2107,7 @@ export default Transferencia;
 ```py
 import sklearn.datasets as datasets_sklearn
 available_datasets = [func for func in dir(datasets_sklearn) if func.startswith('load_') or func.startswith('fetch_')]
-print(available_datasets)
+available_datasets
 ```
 - Listando todos os *datasets* do pacote **ucimlrepo** 
 ```py
@@ -2119,37 +2119,65 @@ list_available_datasets()
 - Para carregar o *dataset*
 ```py
 from sklearn.datasets import load_iris
-
 iris = load_iris()
-iris.target_names
-iris.target
+```
+- Os *datasets* são formados pelas suas características (atributos) representados pelas *features*
+```py
 iris.feature_names
+```
+- Os dados das *features* podem ser vistos no atributo `data`
+```py
 iris.data
+```
+- Os *targets* representam o resultado observado para cada conjunto de *feature*
+```py
+iris.target_names
+```
+```py
+iris.target
 ```
 - A melhor forma para se trabalhar com esses dados é onvertê-los para *dataframes*
 ```py
+import pandas as pd
 df = pd.DataFrame(iris.data, columns=iris.feature_names)
-df['species'] = iris.target
+df['especie'] = iris.target
 df.head()
 ```
+- Outro exemplo para o *dataset* relacionado ao tipo de câncer de mama (malígno ou benígno)
+```py
+from sklearn.datasets import load_breast_cancer
+cancer = load_breast_cancer()
+cancer.target_names
+```
+```py
+cancer.target_names
+```
+```py
+dfCancer = pd.DataFrame(cancer.data, columns=cancer.feature_names)
+dfCancer['tipo'] = cancer.target
+dfCancer['tipo_desc'] = cancer.target_names[cancer.target]
+dfCancer.head()
+```
 - Selecionar um subconjunto dos dados para testar o modelo
+    - `X_train`: sub-conjunto dos dados para o treinamento
+    - `y_train`: *targets* para o treinamento relacionados ao `X_train`
+    - `X_test`: sub-onjunto dos dados para o teste
+    - `y_test`: *targets* para o teste relacionados ao `X_test`
+    - `test_size=0.2`: indica 20% para o teste e 80% das amostras para o treinamento (no exemplo, total = 569, treino = 455, teste = 114)
 ```py
 from sklearn.model_selection import train_test_split
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-df_train = pd.DataFrame(X_train, columns=iris.feature_names)
-df_train['species'] = y_train
-
-# Exibir as primeiras 5 linhas dos dados de treino
-print("Dados de treino (X_train e y_train):")
-print(df_train.head())
+X_train, X_test, y_train, y_test = train_test_split(cancer.data, cancer.target, test_size=0.2, random_state=42)
+df_train = pd.DataFrame(X_train, columns=cancer.feature_names)
+df_train['tipo'] = y_train
+df_train.head(1000)
 ```
 - Exibir os dados de teste
 ```py
-df_test = pd.DataFrame(X_test, columns=iris.feature_names)
-df_test['species'] = y_test
+df_test = pd.DataFrame(X_test, columns=cancer.feature_names)
+df_test['tipo'] = y_test
 df_test.head()
 ```
-- Visualização gráfica
+- Visualização gráfica da distribuição dos tipos de câncer por malígno(0) e benígno(1)
 ```py
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -2167,30 +2195,44 @@ plt.title("Distribuição das Classes - Teste")
 plt.tight_layout()
 plt.show()
 ```
+***
 #### H2O
 - Iniciar o servidor **H2O**
 ```py
 import h2o
 h2o.init()
 ```
-- Importar a bilbioteca `H2OAutoML`
+- Importar a bilbioteca `H2OAutoML` e o *dataframe* específico `H2OFrame`
 ```py
 from h2o.automl import H2OAutoML
 from h2o import H2OFrame
 ```
-- Converter o *Dataframe* para o formato aceito pelo **H2O** que é o `H2OFrame`
+- Converter o *Dataframe* para o formato aceito pelo **H2O** (`H2OFrame`)
 ```py
-train_data = H2OFrame(pd.DataFrame(X_train))
-test_data = H2OFrame(pd.DataFrame(X_test))
+train_data = H2OFrame(df_train)
+train_data['tipo'] = train_data['tipo'].asfactor()
+test_data = H2OFrame(df_test)
+```
+```py
+train_data
+```
+```py
+test_data
 ```
 - Realizar a escolha do melhor modelo (Random Forest, Gradient Boosting, Deep Learning, etc.) para o conjunto de dados
+    - `max_models`: quantidade máxima de modelos analisados
+    - `max_runtime_secs`: tempo máximo de análise
 ```py
-aml = H2OAutoML(max_models=20, max_runtime_secs=12000)
-aml.train(y=0, training_frame=train_data)
+aml = H2OAutoML(max_models=10, max_runtime_secs=120)
+aml.train(x=X_train, y=y_train, training_frame=train_data)
 ```
-- Melhores modelos selecionados
+- Tabela dos melhores modelos selecionados
 ```py
 aml.leaderboard
+```
+- Melhor modelo
+```py
+aml.leader
 ```
 - Utilizar o melhor modelo (`leader`) para realizar uma predição
 ```py
