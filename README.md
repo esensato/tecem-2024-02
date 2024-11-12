@@ -2448,6 +2448,55 @@ performance
 predictions = leader.predict(test)
 predictions.head()
 ```
+#### Exercício
+- Esta não é o melhor caso de aplicação de IA para classificação (pois existe uma regra bem definida) mas serve para avaliar facilmente se o modelo está correto
+- Considerar a lista de notas de 10 alunos e o seu status final, isto é, *Aprovado* ou *Reprovado*
+
+| Aluno | Prova 1 | Prova 2 | Prova 3 | Trabalho 1 | Trabalho 2 | Participação | Média | Status   |
+|-------|---------|---------|---------|------------|------------|--------------|-------|----------|
+| A1    | 6       | 7       | 8       | 7          | 6          | 5            | 6.17  | Aprovado |
+| A2    | 5       | 6       | 4       | 3          | 4          | 6            | 4.67  | Reprovado|
+| A3    | 9       | 8       | 9       | 8          | 9          | 9            | 8.83  | Aprovado |
+| A4    | 4       | 3       | 5       | 4          | 5          | 4            | 4.17  | Reprovado|
+| A5    | 7       | 6       | 7       | 6          | 7          | 8            | 6.83  | Aprovado |
+| A6    | 6       | 5       | 6       | 5          | 5          | 4            | 5.17  | Reprovado|
+| A7    | 8       | 8       | 7       | 7          | 6          | 7            | 7.17  | Aprovado |
+| A8    | 3       | 4       | 3       | 2          | 3          | 2            | 3.00  | Reprovado|
+| A9    | 10      | 10      | 9       | 10         | 9          | 9            | 9.50  | Aprovado |
+| A10   | 5       | 5       | 6       | 6          | 6          | 4            | 5.33  | Reprovado|
+
+- Um aluno é aprovado caso a sua média final seja maior ou igual a 6
+- A preparação dos dados é a que segue abaixo
+```py
+# Criando o dataframe com os dados simulados
+data = {
+    'Prova 1': [6, 5, 9, 4, 7, 6, 8, 3, 10, 5],
+    'Prova 2': [7, 6, 8, 3, 6, 5, 8, 4, 10, 5],
+    'Prova 3': [8, 4, 9, 5, 7, 6, 7, 3, 9, 6],
+    'Trabalho 1': [7, 3, 8, 4, 6, 5, 7, 2, 10, 6],
+    'Trabalho 2': [6, 4, 9, 5, 7, 5, 6, 3, 9, 6],
+    'Participação': [5, 6, 9, 4, 8, 4, 7, 2, 9, 4]
+}
+
+# Convertendo o dicionário para um DataFrame pandas
+df = pd.DataFrame(data)
+
+# Calculando a média
+df['Média'] = df[['Prova 1', 'Prova 2', 'Prova 3', 'Trabalho 1', 'Trabalho 2', 'Participação']].mean(axis=1)
+
+# Criando a coluna 'Status' com base na média
+df['Status'] = df['Média'].apply(lambda x: 'Aprovado' if x > 5 else 'Reprovado')
+```
+- Utilizar o *AutoML* com o **H2O** para determinar o melhor modelo
+- Verificar qual seria o status dos alunos abaixo
+
+| Aluno | Prova 1 | Prova 2 | Prova 3 | Trabalho 1 | Trabalho 2 | Participação | Média | Status   |
+|-------|---------|---------|---------|------------|------------|--------------|-------|----------|
+| A1    | 10       | 10       | 10       | 10          | 10          | 10            | 10  | Aprovado |
+| A2    | 5       | 1       | 0       | 9          | 8          | 10            | 5.5  | Reprovado|
+
+- Observar a *Confusion Matrix* para os resultados por meio do método `best_model.model_performance()`
+
 ***
 #### PCA (Principal Component Analysis)
 - Aplicar o *PCA* para reduzir a dimensão 4D para 2D sobre um conjunto de *features* relacionadas a imóveis em uma cidade
@@ -2603,6 +2652,44 @@ plt.title('Clusters de Vinho (K-means com K=3)')
 plt.xlabel('Componente Principal 1')
 plt.ylabel('Componente Principal 2')
 plt.show()
+```
+#### Outras Bibliotecas
+- TPOT - gera programas em *python* que implementam 
+```py
+!pip install tpot
+```
+```py
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from tpot import TPOTClassifier, TPOTRegressor
+
+data = {
+    'Preço (milhares de R$)': [250, 450, 350, 200, 300, 550, 400, 150, 250, 600],
+    'Tamanho (m²)': [80, 120, 100, 60, 90, 150, 110, 50, 85, 160],
+    'Quartos': [2, 3, 3, 1, 2, 4, 3, 1, 2, 4],
+    'Idade (anos)': [10, 5, 8, 15, 12, 3, 7, 20, 11, 2],
+    'Padrão': ['Médio', 'Alto', 'Médio', 'Baixo', 'Médio', 'Alto', 'Alto', 'Baixo', 'Médio', 'Alto']
+}
+
+df = pd.DataFrame(data)
+df['Padrão'] = df['Padrão'].map({'Baixo': 0, 'Médio': 1, 'Alto': 2})
+
+X = df.drop('Padrão', axis=1)
+y = df['Padrão']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+tpot = TPOTClassifier(verbosity=2, generations=5, population_size=20, random_state=42, cv=3)
+tpot.fit(X_train, y_train)
+print("Acurácia no conjunto de teste:", tpot.score(X_test, y_test))
+tpot.export('best_classification_model.py')
+``` 
+- Verificar se os arquivos foram gerados no diretório local
+```py
+!ls
+```
+- Importar o arquivo gerado
+```py
+from best_classification_model import exported_pipeline
 ```
 
 
