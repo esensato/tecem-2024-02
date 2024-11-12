@@ -2093,6 +2093,32 @@ export default Transferencia;
 - Tempo de processamento de blocos pode ser consultado em [block time](https://etherscan.io/chart/blocktime)
 ***
 ## Auto Machine Learning (AML)
+- Principais modelos utilizados para classificação e/ou predição (regressão)
+
+| **Modelo**                   | **Tipo de Uso**      | **Descrição**                                                                                                                                                       |
+|------------------------------|----------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Random Forest (RF)**        | Classificação, Regressão | Algoritmo baseado em múltiplas árvores de decisão, útil tanto para classificação quanto para regressão, especialmente em dados ruidosos.                            |
+| **Gradient Boosting Machine (GBM)** | Classificação, Regressão | Método de boosting com árvores de decisão que melhora iterativamente os erros do modelo anterior. Funciona bem com dados não lineares.                            |
+| **Deep Learning (DL)**        | Classificação, Regressão | Redes neurais profundas que podem capturar padrões complexos, sendo eficaz para grandes volumes de dados. Comum em tarefas como reconhecimento de imagem e voz. |
+| **Generalized Linear Model (GLM)** | Classificação, Regressão | Modelos lineares com diferentes distribuições de erro, usado para problemas como regressão logística ou linear.                                                    |
+| **Naive Bayes**               | Classificação        | Modelo probabilístico simples que assume a independência entre as variáveis, frequentemente usado em tarefas de texto como spam filtering.                       |
+| **Stacked Ensemble**          | Classificação, Regressão | Combinação de múltiplos modelos para melhorar a performance, sendo uma técnica poderosa para aumentar a precisão geral.                                             |
+| **XGBoost**                   | Classificação, Regressão | Implementação eficiente de gradient boosting, amplamente usado em competições de machine learning, especialmente para dados tabulares.                            |
+| **LightGBM**                  | Classificação, Regressão | Versão mais eficiente e escalável do Gradient Boosting, projetada para lidar com grandes volumes de dados.                                                          |
+| **GLM with Elastic Net**      | Classificação, Regressão | Modelo linear com regularização L1 e L2 (Lasso + Ridge), que ajuda a prevenir overfitting, especialmente em dados com muitas variáveis.                          |
+| **Quantile Regression**       | Regressão            | Variante da regressão linear que estima quantis (ex: mediana) em vez de valores médios, útil em modelos robustos a outliers.                                      |
+| **H2O AutoML Stacked Ensemble** | Classificação, Regressão | Combinação automática dos melhores modelos gerados pelo AutoML, resultando em um modelo de ensemble final para melhorar a precisão.                                |
+| **K-means Clustering**        | Não supervisionado   | Algoritmo de agrupamento usado para segmentação de dados em clusters, útil para explorar padrões e agrupamentos em dados não rotulados.                          |
+| **DBSCAN (Density-Based Spatial Clustering of Applications with Noise)** | Não supervisionado   | Algoritmo de agrupamento baseado em densidade, útil para encontrar clusters de formas arbitrárias e identificar outliers.                                           |
+| **Principal Component Analysis (PCA)** | Não supervisionado   | Técnica de redução de dimensionalidade, usada para simplificar dados complexos, mantendo as variações mais significativas.                                         |
+| **t-SNE (t-Distributed Stochastic Neighbor Embedding)** | Não supervisionado   | Técnica de redução de dimensionalidade usada para visualizar dados em alta dimensão de maneira mais compreensível, muito usada em visualização de dados.           |
+| **K-Nearest Neighbors (KNN)** | Classificação, Regressão | Modelo simples que classifica ou faz previsões baseadas nos "vizinhos" mais próximos, utilizado tanto para classificação quanto para regressão.                    |
+| **Support Vector Machine (SVM)** | Classificação, Regressão | Algoritmo poderoso para classificação e regressão, que busca maximizar a margem entre as classes. Funciona bem para dados complexos e não linearmente separáveis.   |
+| **AdaBoost**                  | Classificação, Regressão | Método de boosting que combina vários modelos fracos (geralmente árvores pequenas) para criar um modelo forte, comumente usado em classificações.                   |
+| **ElasticNet**                | Regressão            | Combinação de regularização L1 (Lasso) e L2 (Ridge), útil em regressão linear quando há muitas variáveis correlacionadas.                                           |
+| **Ridge Regression**          | Regressão            | Tipo de regressão linear com regularização L2 para evitar overfitting em dados com muitas variáveis.                                                                |
+| **Lasso Regression**          | Regressão            | Tipo de regressão linear com regularização L1, que ajuda a realizar seleção de características ao forçar coeficientes a zero.                                      |
+
 - Acessar o [Google Colab](https://colab.research.google.com) e criar um novo *Notebook*
 - Importar os pacotes necessários
 ```javascript
@@ -2224,7 +2250,9 @@ test_data
     - `max_runtime_secs`: tempo máximo de análise
 ```py
 aml = H2OAutoML(max_models=10, max_runtime_secs=120)
-aml.train(x=X_train, y=y_train, training_frame=train_data)
+x = train_data.columns[:-1]
+y = 'tipo'
+aml.train(x=x, y=y, training_frame=train_data)
 ```
 - Tabela dos melhores modelos selecionados
 ```py
@@ -2238,4 +2266,347 @@ aml.leader
 ```py
 predictions = aml.leader.predict(test_data)
 ```
+- Considerar a tabela abaixo contendo 10 observações sobre 4 *features* relacionadas a imóveis em uma cidade
+
+| Imóvel | Preço | Tamanho (m²) | Quartos | Idade (anos) | Padrão |
+|--------|------------------------|--------------|---------|--------------|--------|
+| 1      | 250                    | 80           | 2       | 10           | Médio  |
+| 2      | 450                    | 120          | 3       | 5            | Alto   |
+| 3      | 350                    | 100          | 3       | 8            | Médio  |
+| 4      | 200                    | 60           | 1       | 15           | Baixo  |
+| 5      | 300                    | 90           | 2       | 12           | Médio  |
+| 6      | 550                    | 150          | 4       | 3            | Alto   |
+| 7      | 400                    | 110          | 3       | 7            | Alto   |
+| 8      | 150                    | 50           | 1       | 20           | Baixo  |
+| 9      | 250                    | 85           | 2       | 11           | Médio  |
+| 10     | 600                    | 160          | 4       | 2            | Alto   |
+
+- Instalar o *H2O* caso ainda não esteja instalado
+```py 
+!pip install h2o
+```
+- Importar o pacote e iniciar o servidor
+```py
+import h2o
+h2o.init()
+```
+- Criar o *dataframe* no formato *H2O*
+```py
+import pandas as pd
+data = {
+    'Preço': [250, 450, 350, 200, 300, 550, 400, 150, 250, 600],
+    'Tamanho (m²)': [80, 120, 100, 60, 90, 150, 110, 50, 85, 160],
+    'Quartos': [2, 3, 3, 1, 2, 4, 3, 1, 2, 4],
+    'Idade (anos)': [10, 5, 8, 15, 12, 3, 7, 20, 11, 2],
+    'Padrão': ['Médio', 'Alto', 'Médio', 'Baixo', 'Médio', 'Alto', 'Alto', 'Baixo', 'Médio', 'Alto']
+}
+
+df = pd.DataFrame(data)
+h2o_df = h2o.H2OFrame(df)
+h2o_df
+```
+- Dividir os dados para treino (80%) e testes do modelo (20%)
+```py
+train, test = h2o_df.split_frame(ratios=[0.8], seed=1234)
+```
+```py
+train
+```
+```py
+test
+```
+- Treinar um modelo, por exemplo, o *random forest*
+```py
+x = ['Preço', 'Tamanho (m²)', 'Quartos', 'Idade (anos)']
+y = 'Padrão'
+
+from h2o.estimators.random_forest import H2ORandomForestEstimator
+model = H2ORandomForestEstimator(ntrees=50, max_depth=20)
+model.train(x=x, y=y, training_frame=train)
+```
+- Avaliar a performance do modelo selecionado
+```py
+performance = model.model_performance(test_data=test)
+performance
+```
+- Efetuar a classificação
+```py
+predictions = model.predict(test)
+predictions.head()
+```
+- Agora, efetuar o treinamento para um modelo preditivo, isto é, prever o preço de um imóvel com base nas suas *features*
+```py
+train, test = h2o_df.split_frame(ratios=[0.8], seed=1234)
+```
+- Definir as variáveis (dependentes - preço e independentes - tamanho, quartos e idade)
+```py
+x = ['Tamanho (m²)', 'Quartos', 'Idade (anos)']
+y = 'Preço'
+```
+- Criar o modelo de regressão
+```py
+model_regressor = H2ORandomForestEstimator(ntrees=50, max_depth=20)
+model_regressor.train(x=x, y=y, training_frame=train)
+```
+- Avaliar o modelo
+```py
+performance_regressor = model_regressor.model_performance(test_data=test)
+performance_regressor
+```
+- Efetuar uma previsão de preço com base no conjunto de teste
+```py
+predictions_regressor = model_regressor.predict(test)
+predictions_regressor.head()
+```
+- Avaliar o imóvel abaixo e determinar seu padrão aplicando o modelo *Naive Bayes*
+
+| **Preço** | **Tamanho (m²)** | **Quartos** | **Idade (anos)** | **Padrão** |
+|----------------------------|------------------|-------------|------------------|------------|
+| 300                        | 200               | 5           | 30               | ???      |
+
+```py
+from h2o.estimators import H2ONaiveBayesEstimator
+nb = H2ONaiveBayesEstimator()
+nb.train(x=x, y=y, training_frame=train)
+performance = nb.model_performance(test_data=test)
+performance
+```
+- Criando um novo dado com as características do imóvel e efetuando a predição
+```py
+new_data = pd.DataFrame({
+    'Preço': [300],
+    'Tamanho (m²)': [200],
+    'Quartos': [5],
+    'Idade (anos)': [30]
+})
+new_data_h2o = h2o.H2OFrame(new_data)
+prediction = nb.predict(new_data_h2o)
+prediction
+```
+- Prever agora qual seria o preço do mesmo imóvel, isto é, com as *features* abaixo utilizando o *Generalized Linear Model*
+
+| **Preço** | **Tamanho (m²)** | **Quartos** | **Idade (anos)** |
+|----------------------------|------------------|-------------|------------------|
+| 300                        | 200               | 5           | 30              |
+
+```py
+from h2o.estimators import H2OGeneralizedLinearEstimator
+
+# Criando o DataFrame com os dados de imóveis
+data = {
+    'Preço': [250, 450, 350, 200, 300, 550, 400, 150, 250, 600],
+    'Tamanho (m²)': [80, 120, 100, 60, 90, 150, 110, 50, 85, 160],
+    'Quartos': [2, 3, 3, 1, 2, 4, 3, 1, 2, 4],
+    'Idade (anos)': [10, 5, 8, 15, 12, 3, 7, 20, 11, 2]
+}
+
+df = pd.DataFrame(data)
+h2o_df = h2o.H2OFrame(df)
+train, test = h2o_df.split_frame(ratios=[0.8], seed=1234)
+x = ['Tamanho (m²)', 'Quartos', 'Idade (anos)']
+y = 'Preço'
+glm = H2OGeneralizedLinearEstimator(family="gaussian")
+glm.train(x=x, y=y, training_frame=train)
+performance = glm.model_performance(test_data=test)
+performance.rmse()
+new_data = pd.DataFrame({
+    'Tamanho (m²)': [200],
+    'Quartos': [5],
+    'Idade (anos)': [30]
+})
+new_data_h2o = h2o.H2OFrame(new_data)
+
+prediction = glm.predict(new_data_h2o)
+prediction
+```
+- Obs: *Root Mean Squared Error - RMSE* (* Erro Quadrático Médio (EQM)*) é uma métrica utilizada para medir a diferença entre os valores reais e os valores preditos pelo modelo
+- Utilizar o conceito de *Auto Machine Learning* para escolher automaticamente o melhor modelo
+```py
+aml = H2OAutoML(max_models=20, seed=1, max_runtime_secs=300)
+aml.train(x=x, y=y, training_frame=train)
+```
+- Modelos selecionados
+```py
+aml.leaderboard
+```
+- Melhor modelo
+```py
+aml.leader
+```
+- Avaliando a performande do melhor modelo
+    - Model: Nome do modelo treinado (ex. Random Forest, GBM, Deep Learning, etc.)
+    - AUC: Para classificação, mostra a Área sob a Curva ROC
+    - LogLoss: Para classificação, mostra a medida da incerteza das previsões
+    - RMSE: Para regressão, mostra o erro quadrático médio
+    - MAE: Para regressão, mostra o erro absoluto médio
+```py
+performance = leader.model_performance(test_data=test)
+performance
+```
+- Realizando previsões
+```py
+predictions = leader.predict(test)
+predictions.head()
+```
+***
+#### PCA (Principal Component Analysis)
+- Aplicar o *PCA* para reduzir a dimensão 4D para 2D sobre um conjunto de *features* relacionadas a imóveis em uma cidade
+- O conjunto de dados é criado manualmente com as 4 características dos imóveis: Preço, Tamanho, Quartos e Idade.
+Normalização
+```py
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+
+data = {
+    'Preço': [250, 450, 350, 200, 300, 550, 400, 150, 250, 600],
+    'Tamanho (m²)': [80, 120, 100, 60, 90, 150, 110, 50, 85, 160],
+    'Quartos': [2, 3, 3, 1, 2, 4, 3, 1, 2, 4],
+    'Idade (anos)': [10, 5, 8, 15, 12, 3, 7, 20, 11, 2]
+}
+
+df = pd.DataFrame(data)
+df
+```
+- Como as características possuem escalas diferentes (ex: o preço pode variar de centenas de milhares, enquanto a idade varia de poucos anos), usamos o `StandardScaler` para normalizar os dados, o que significa transformá-los para que tenham média 0 e desvio padrão 1. Isso é importante porque o *PCA* é sensível à escala dos dados
+```py
+scaler = StandardScaler()
+df_scaled = scaler.fit_transform(df)
+df_scaled
+```
+- O PCA é aplicado com n_components=2, o que significa que vamos reduzir as 4 dimensões originais para 2 componentes principais. O PCA encontra a combinação linear das características que mais explica a variância dos dados
+```py
+pca = PCA(n_components=2)
+df_pca = pca.fit_transform(df_scaled)
+
+df_pca_df = pd.DataFrame(df_pca, columns=['PC1', 'PC2'])
+
+plt.figure(figsize=(8, 6))
+plt.scatter(df_pca_df['PC1'], df_pca_df['PC2'], color='blue', marker='o')
+
+plt.title('Redução de Dimensionalidade - Imóveis em uma Cidade (PCA)')
+plt.xlabel('Componente Principal 1 (PC1)')
+plt.ylabel('Componente Principal 2 (PC2)')
+
+plt.show()
+```
+***
+#### K-Means
+- Instalar os pacotes necessários
+```py
+!pip install scikit-learn matplotlib seaborn
+```
+- Preparar os dados para processamento
+```py
+import pandas as pd
+from sklearn.cluster import KMeans
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+data = {
+    'Item': ['Banana', 'Maçã', 'Abacate', 'Alface', 'Rúcula', 'Acelga'],
+    'Peso (g)': [120, 150, 200, 50, 30, 40],
+    'Doçura (0-10)': [9, 8, 7, 2, 1, 3],
+    'Cor (1-fruta, 0-verdura)': [1, 1, 1, 0, 0, 0]
+}
+
+df = pd.DataFrame(data)
+df.set_index('Item', inplace=True)
+
+df
+```
+- Aplicar o *k-means*
+```py
+X = df[['Peso (g)', 'Doçura (0-10)', 'Cor (1-fruta, 0-verdura)']]
+
+kmeans = KMeans(n_clusters=2, random_state=42)
+df['Cluster'] = kmeans.fit_predict(X)
+
+df
+```
+- Visualizar o resultado
+```py
+sns.scatterplot(data=df, x='Peso (g)', y='Doçura (0-10)', hue='Cluster', palette='Set2', s=100)
+
+plt.title('Classificação de Frutas e Verduras com K-means')
+plt.xlabel('Peso (g)')
+plt.ylabel('Doçura (0-10)')
+plt.legend(title='Cluster')
+plt.show()
+```
+- Aplicando o *k-means* em um conjunto de dados mais complexo (wine)
+```py
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.datasets import load_wine
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
+
+data = load_wine()
+X = data.data
+y = data.target
+
+df = pd.DataFrame(X, columns=data.feature_names)
+
+df.head()
+```
+- Normalizar os dados
+- A normalização transforma as variáveis para a mesma escala, garantindo que cada característica tenha média 0 e desvio padrão 1, o que evita que variáveis com maior amplitude dominem o cálculo das distâncias.
+```py
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+X_scaled[:5]
+```
+- Verificar qual seria o valor inicial ideal aplicando o método do cotovelo
+```py
+inertia = []
+
+for k in range(1, 11):
+    kmeans = KMeans(n_clusters=k, random_state=42)
+    kmeans.fit(X_scaled)
+    inertia.append(kmeans.inertia_)
+
+plt.plot(range(1, 11), inertia, marker='o')
+plt.title('Método do Cotovelo')
+plt.xlabel('Número de Clusters (K)')
+plt.ylabel('Inércia')
+plt.xticks(range(1, 11))
+plt.show()
+```
+- Aplicar o *k-means* para k = 3
+```py
+kmeans = KMeans(n_clusters=3, random_state=42)
+y_kmeans = kmeans.fit_predict(X_scaled)
+
+df['Cluster'] = y_kmeans
+
+df.head()
+```
+- Visualizar os *clusters*
+```py
+from sklearn.decomposition import PCA
+
+pca = PCA(n_components=2)
+X_pca = pca.fit_transform(X_scaled)
+
+df_pca = pd.DataFrame(X_pca, columns=['PC1', 'PC2'])
+df_pca['Cluster'] = y_kmeans
+
+plt.figure(figsize=(8,6))
+sns.scatterplot(x='PC1', y='PC2', hue='Cluster', data=df_pca, palette='Set2', s=100)
+plt.title('Clusters de Vinho (K-means com K=3)')
+plt.xlabel('Componente Principal 1')
+plt.ylabel('Componente Principal 2')
+plt.show()
+```
+
+
+
+
+
 
