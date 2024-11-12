@@ -2654,7 +2654,7 @@ plt.ylabel('Componente Principal 2')
 plt.show()
 ```
 #### Outras Bibliotecas
-- TPOT - gera programas em *python* que implementam 
+- [TPOT](https://epistasislab.github.io/tpot/) - gera programas em *python* que implementam um *pipeline* de *Machine Learning*
 ```py
 !pip install tpot
 ```
@@ -2691,8 +2691,20 @@ tpot.export('best_classification_model.py')
 ```py
 from best_classification_model import exported_pipeline
 ```
+- Exemplo do [auto-sklearn](https://automl.github.io/auto-sklearn/master/)
+```py
+import autosklearn.regression
+from sklearn.metrics import mean_squared_error
 
+automl = autosklearn.regression.AutoSklearnRegressor(time_left_for_this_task=60, # tempo total para a busca
+                                                    per_run_time_limit=30,       # tempo máximo por modelo
+                                                    n_jobs=-1)                   # Usando todos os núcleos do CPU
+automl.fit(X_train, y_train)
+y_pred = automl.predict(X_test)
 
+mse = mean_squared_error(y_test, y_pred)
+mse
+```
 
 
 
