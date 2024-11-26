@@ -2705,7 +2705,327 @@ y_pred = automl.predict(X_test)
 mse = mean_squared_error(y_test, y_pred)
 mse
 ```
+***
+#### Mineração de Texto
+- [Voyant Tools](https://voyant-tools.org/) é uma plataforma gratuita para análise de textos on-line
+- Acessar o [Google Colab](https://colab.research.google.com) e criar um novo *Notebook*
+- Em *python* existe a biblioteca [nltk](https://www.nltk.org/) para processamento de linguagem natural (já incluída no *colab*)
+- Necessário instalar alguns pacotes específicos por idioma
+```py
+import nltk
+nltk.download('all')
+``` 
+- Tokenização
+```py
+tokens = nltk.word_tokenize("Eu gostaria de aprender IA. Acho uma área muito interessante, além de bastante promissora.".lower())
+tokens
+```
+- *Stop words* para a língua portuguesa
+```py
+filtered_tokens = [token for token in tokens if token not in stopwords.words('portuguese')]
+filtered_tokens
+```
+- Processo de *stemming* com o algoritmo de [Porter](https://tartarus.org/martin/PorterStemmer/index.html) para palavras em inglês
+```py
+from nltk.stem import PorterStemmer
+ps = PorterStemmer()
+example_words = ["program","programming","programer","programs","programmed"]
+for word in example_words:
+  print(word, ps.stem(word))
+```
+- A biblioteca *nltk* possui um *stemmer* específico para a língua portuguesa chamado `RSLPStemmer`
+```py
+from nltk.stem import RSLPStemmer
+ps = RSLPStemmer()
+example_words = ["programa","programador","programação","programável","programar"]
+for word in example_words:
+  print(word, ps.stem(word))
+```
+- Lematização
+```py
+from nltk.stem import WordNetLemmatizer
+wnl = WordNetLemmatizer()
+example_words = ["program","programming","programer","programs","programmed"]
+for word in example_words:
+  print(word, ps.stem(word))
+```
+- Para português utilizar a biblioteca spicy
+    - Reiniciar o colab com `Control + M + .`
+```py
+!pip install spacy
+!python -m spacy download pt_core_news_sm
+```
+- Aplicar o processo em um texto de exemplo em português
+```py
+import spacy
 
+nlp = spacy.load("pt_core_news_sm")
+text = "Eu estava correndo quando vi um gato e ele correu rapidamente."
+doc = nlp(text)
+lemmatized_words = [token.lemma_ for token in doc]
+lemmatized_words
+```
+- Exemplo de *Bag of Words*
+    - Instalar a biblioteca *scikit-learn* com `!pip install scikit-learn`
+```py
+from sklearn.feature_extraction.text import CountVectorizer
 
+docs = [
+    "O cachorro corre rápido",
+    "O gato corre devagar"
+]
 
+vectorizer = CountVectorizer()
+X = vectorizer.fit_transform(docs)
+vocab = vectorizer.get_feature_names_out()
+print("Vocabulário:", vocab)
+print("\nMatriz de contagem de palavras (Bag-of-Words):")
+print(X.toarray())
+```
+- Análise de sentimento
+```py
+import nltk
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from nltk.classify import NaiveBayesClassifier
 
+# Baixando recursos necessários do NLTK
+nltk.download('punkt')
+nltk.download('stopwords')
+
+# Definindo o conjunto de dados de treinamento com frases e rótulos
+# 'positivo' ou 'negativo' são os rótulos de sentimento
+train_data = [
+    ("O produto é realmente muito bom, estou plenamente satisfeito", "positivo"),
+    ("Vou devolver o produto pois estou muito decepcionado com o seu funcionamento", "negativo"),
+    ("Adorei a compra, super recomendo!", "positivo"),
+    ("O produto não funciona, fiquei muito frustrado", "negativo"),
+    ("Estou muito feliz com o produto, valeu cada centavo", "positivo"),
+    ("O produto é péssimo, não serve para nada", "negativo")
+]
+
+# Função para extrair características (features) do texto
+def extrair_caracteristicas(texto):
+    # Tokenizando o texto e removendo stopwords
+    palavras = word_tokenize(texto.lower())  # Convertendo para minúsculas e tokenizando
+    stop_words = set(stopwords.words('portuguese'))  # Lista de stopwords em português
+    palavras = [palavra for palavra in palavras if palavra not in stop_words and palavra.isalpha()]  # Remover stopwords e não-alfabéticos
+    
+    # Retorna um dicionário de características (palavras como chaves)
+    return {palavra: True for palavra in palavras}
+
+# Transformar os dados de treinamento em características
+train_features = [(extrair_caracteristicas(texto), sentimento) for texto, sentimento in train_data]
+
+# Treinando o classificador Naive Bayes com o NLTK
+classificador = NaiveBayesClassifier.train(train_features)
+
+# Função para classificar novas frases
+def classificar_sentimento(frase):
+    features = extrair_caracteristicas(frase)
+    return classificador.classify(features)
+
+# Testando com novas frases
+novas_frases = [
+    "O produto é muito bom, super recomendo!",  # Sentimento esperado: Positivo
+    "Não gostei do produto, está muito abaixo das minhas expectativas."  # Sentimento esperado: Negativo
+]
+
+# Classificando as novas frases
+for frase in novas_frases:
+    sentimento = classificar_sentimento(frase)
+    print(f"Frase: {frase} -> Sentimento: {sentimento}")
+```
+- Para treinar utilizando um conjunto de dados maior
+```py
+import pandas as pd
+import nltk
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from nltk.classify import NaiveBayesClassifier
+
+# Baixando recursos necessários do NLTK
+nltk.download('punkt')
+nltk.download('stopwords')
+
+# Carregando o CSV diretamente da URL
+url = "https://raw.githubusercontent.com/pycaret/pycaret/master/datasets/amazon.csv"
+data = pd.read_csv(url)
+
+# Visualizando as primeiras linhas do DataFrame
+print(data.head())
+
+# Verificando as colunas do DataFrame
+print(f"Colunas disponíveis: {data.columns}")
+
+# Exibindo a distribuição de sentimentos no dataset
+print(data['sentiment'].value_counts())
+
+# Função para extrair características (features) do texto
+def extrair_caracteristicas(texto):
+    # Tokenizando o texto e removendo stopwords
+    palavras = word_tokenize(texto.lower())  # Convertendo para minúsculas e tokenizando
+    stop_words = set(stopwords.words('english'))  # Lista de stopwords em inglês
+    palavras = [palavra for palavra in palavras if palavra not in stop_words and palavra.isalpha()]  # Remover stopwords e não-alfabéticos
+    
+    # Retorna um dicionário de características (palavras como chaves)
+    return {palavra: True for palavra in palavras}
+
+# Filtrando dados com sentimentos 'positivo' e 'negativo' (se houver)
+data = data[data['sentiment'].isin(['positive', 'negative'])]
+
+# Transformar os dados de treinamento em características
+train_features = [(extrair_caracteristicas(texto), sentimento) for texto, sentimento in zip(data['text'], data['sentiment'])]
+
+# Dividindo o conjunto de dados em treino e teste (80% treino, 20% teste)
+train_size = int(0.8 * len(train_features))
+train_set, test_set = train_features[:train_size], train_features[train_size:]
+
+# Treinando o classificador Naive Bayes com o NLTK
+classificador = NaiveBayesClassifier.train(train_set)
+
+# Função para classificar novas frases
+def classificar_sentimento(frase):
+    features = extrair_caracteristicas(frase)
+    return classificador.classify(features)
+
+# Testando com algumas frases do conjunto de teste
+for texto, sentimento_real in test_set[:5]:  # Testando as primeiras 5 amostras
+    texto_original = ' '.join([palavra for palavra, _ in texto.items()])  # Reconstruindo o texto original
+    sentimento_previsto = classificar_sentimento(texto_original)
+    print(f"Texto: {texto_original}")
+    print(f"Sentimento Real: {sentimento_real} | Sentimento Previsto: {sentimento_previsto}\n")
+```
+
+```py
+import nltk
+from nltk import word_tokenize, pos_tag, ne_chunk
+from nltk.tree import Tree
+
+# Baixando os recursos necessários do NLTK
+nltk.download('punkt')
+nltk.download('maxent_ne_chunker')
+nltk.download('words')
+nltk.download('averaged_perceptron_tagger')
+
+# Texto jurídico exemplo
+texto_juridico = """
+No dia 25 de março de 2023, o juiz João Silva, da 5ª Vara Criminal de São Paulo, 
+proferiu a sentença no processo nº 0012345-67.2023.8.26.0100, em que o réu, 
+Carlos Alberto Pereira, foi condenado por tráfico de drogas. O Ministério Público, 
+representado pela promotora Maria Fernanda Souza, afirmou que a pena deveria ser 
+agravada em razão da reincidência do réu.
+"""
+
+# Tokenização e POS Tagging (Marcação de partes do discurso)
+tokens = word_tokenize(texto_juridico)
+tags = pos_tag(tokens)
+
+# Realizando o NER usando o chunking
+entidades = ne_chunk(tags)
+
+# Função para extrair as entidades nomeadas do texto
+def extrair_entidades(tree):
+    entidades_extraidas = []
+    for subtree in tree:
+        if isinstance(subtree, Tree):
+            entidade = " ".join(word for word, tag in subtree.leaves())
+            tipo = subtree.label()
+            entidades_extraidas.append((entidade, tipo))
+    return entidades_extraidas
+
+# Extraindo as entidades
+entidades_extraidas = extrair_entidades(entidades)
+
+# Exibindo as entidades extraídas
+print("Entidades extraídas:")
+for entidade, tipo in entidades_extraidas:
+    print(f"{entidade} - {tipo}")
+``` 
+- Tipos de classificação
+    - PERSON: Nome de pessoa (como "João Silva" e "Carlos Alberto Pereira")
+    - GPE: Localização geopolítica (como "São Paulo").
+    - TIME: Datas ou períodos de tempo.
+    - ORGANIZATION: Nome de organizações (como "Ministério Público").
+    - MISC: Entidades diversas (usado para coisas como títulos, etc.).
+- Treinamento do modelo de *Reconhecimento de Entidades Nomeadas* (NER) com a biblioteca *spicy*
+- Carregar o modelo base
+```py
+import random
+import spacy
+from spacy.training.example import Example
+nlp = spacy.load("pt_core_news_sm")
+```
+- Dados utilizados para o treinamento
+```py
+train_data = [
+    ("O Art. 5º da Constituição Federal é muito importante", {"entities": [(2, 9, "ARTIGO_LEI")]}),
+    ("No Código Penal, Art. 121 trata do homicídio", {"entities": [(14, 21, "ARTIGO_LEI")]}),
+    ("A decisão foi baseada no Art. 102 da Constituição", {"entities": [(28, 34, "ARTIGO_LEI")]}),
+    ("A cláusula do contrato está no Art. 15", {"entities": [(22, 29, "ARTIGO_LEI")]}),
+]
+``` 
+- Adicionar a nova *tag* ao *NER*
+```py
+ner = nlp.get_pipe("ner")
+ner.add_label("ARTIGO_LEI")
+```
+- Iniciar o treinamento
+```py
+optimizer = nlp.begin_training()
+
+for epoch in range(30):
+    print(f"Epoch {epoch + 1}")
+    random.shuffle(train_data)
+    losses = {}
+    for text, annotations in train_data:
+        doc = nlp.make_doc(text)
+        example = Example.from_dict(doc, annotations)
+        nlp.update([example], drop=0.5, losses=losses)
+    print(losses)
+```
+- Testar o modelo
+```py
+test_text = "O juiz citou o Art. 5º da Constituição Federal como base para sua decisão"
+doc = nlp(test_text)
+print("Entidades encontradas:")
+for ent in doc.ents:
+    print(f"{ent.text} - {ent.label_}")
+```
+- Criar um modelo para reconhecer o *CPF* de uma pessoa
+- Detecção de sentenças *Sentence Boundary Detection* (SBD)
+```py
+import spacy
+
+nlp = spacy.load("pt_core_news_sm")
+
+# Texto de exemplo
+texto = """
+SpaCy é uma excelente biblioteca de processamento de linguagem natural. Ela é rápida, precisa e muito utilizada na indústria.
+Muitas pessoas usam o spaCy para tarefas como tokenização, lematização, e, claro, detecção de limites de sentenças.
+O spaCy também possui suporte para múltiplos idiomas, tornando-o ideal para projetos globais.
+"""
+doc = nlp(texto)
+
+print("Sentenças detectadas:")
+for sent in doc.sents:
+    print(f"- {sent.text}")
+```
+- Análise de similaridade
+    - Carregar o modelo de similaridade maior com `!python -m spacy download en_core_web_lg`
+    - Para português `!python -m spacy download pt_core_news_lg`
+```py
+import spacy
+
+nlp = spacy.load("en_core_web_lg")
+
+frase1 = "I love programming in Python"
+frase2 = "Python is my favorite programming language"
+
+doc1 = nlp(frase1)
+doc2 = nlp(frase2)
+
+similaridade = doc1.similarity(doc2)
+
+print(f"A similaridade entre as duas frases é: {similaridade:.2f}")
+```
